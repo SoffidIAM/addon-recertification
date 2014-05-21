@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<SoffidIAMPlugin xmlns="http://www.soffid.com/schema/iam-plugin-v1"> 
+	<name>Soffid Recertification Process</name>
+	<version>${pom.version}</version>
+	<core name="Recertification common classes" resource="recertification-common-${pom.version}.jar"/>
+	<core name="Recertification core classes" resource="recertification-core-${pom.version}.jar"/>
+	<web name="Recertification web files" resource="recertification-web-${pom.version}.war"/>
+</SoffidIAMPlugin>

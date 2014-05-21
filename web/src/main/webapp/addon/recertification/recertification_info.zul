@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?page id="recertificationInfo" title="Recertification info"
+	contentType="text/html;charset=UTF-8"?>
+<?taglib uri="/WEB-INF/tld/web/core.dsp.tld" prefix="c" ?>
+<?component name="input_criteri" macro-uri="/comu/input_criteri.zul"?>
+<?component name="input_dada" macro-uri="/comu/input_dada.zul"?>
+<?component name="input_criteri_data" macro-uri="/comu/input_criteri_data.zul"?>
+<?component name="input_etiqueta" macro-uri="/comu/input_etiqueta.zul"?>
+
+<zk xmlns:h="http://www.w3.org/1999/xhtml">
+
+	<style src="~./styles/estil.css"/>
+	
+	<zscript src="/comu/netejaCriteris.zul" />
+	<zscript src="/comu/checkTruncatedResults.zul" />
+
+	<datamodel id="model" rootNode="root"
+		src="addon/recertification/descriptorRecertification.xml"/>
+	
+	<zscript>
+		<![CDATA[
+			import com.soffid.iam.addons.recertification.common.*;
+			
+			fileres = es.caib.seycon.ng.web.Custom.FILERES;
+			fileresO = es.caib.seycon.ng.web.Custom.FILERES_OBRIR;
+			
+			try
+			{
+				es.caib.zkib.zkiblaf.Application.setTitle(org.zkoss.util.resource
+						.Labels.getLabel("recertification.title"));
+			}
+			
+			catch (Exception ex) {}
+			
+			queryWindowMin = "75px";
+			queryWindowMax = "110px";
+			
+			boolean queryEnabled = false;
+			model.getVariables().declareVariable("queryEnabled", queryEnabled);
+			retrySearch = false;
+			
+			// Method to obtain the parameters to search process
+			java.util.Map getSearchParameters()
+			{
+				java.util.Map searchValues = new java.util.HashMap();
+				
+				name = esquema.getFellow("queryWindow").getFellow("queryName")
+						.getFellow("textbox");
+				startDate = esquema.getFellow("queryWindow")
+						.getFellow("queryStartDate").getFellow("textbox");
+				endDate = esquema.getFellow("queryWindow")
+						.getFellow("queryEndDate").getFellow("textbox");
+				group = esquema.getFellow("queryWindow").getFellow("queryGroup")
+						.getFellow("textbox");
+				application = esquema.getFellow("queryWindow")
+						.getFellow("queryApplication").getFellow("textbox");
+				status = esquema.getFellow("queryWindow").getFellow("queryStatus")
+						.getSelectedItem();
+				
+				// Check enable query
+				if (((name == null) || (name.value == null) ||
+						(name.value.trim().length() == 0)) &&
+						(group.value.trim().length() == 0) && (application == null) &&
+						(status == null))
+				{
+					queryEnabled = false;
+				}
+				
+				else
+				{
+					queryEnabled = true;
+				}
+				
+				if (startDate.value.trim().length() != 0)
+				{
+					queryEnabled = true;
+					dataAmbValor = true;
+				}
+				
+				if (endDate.value.trim().length() != 0)
+				{
+					if (!dataAmbValor)
+					{
+						Missatgebox.avis (org.zkoss.util.resource.Labels
+								.getLabel("recertification.Avis"),
+								org.zkoss.util.resource.Labels.getLabel("recertification.Error"));
+						return null;
+					}
+				
+					queryEnabled = true;
+				}
+				
+				return searchValues;
+			}
+			
+			void search()
+			{
+				java.util.Map lista = new java.util.HashMap();
+				RecertificationProcessCriteria criteria = model.getJXPathContext()
+						.getValue("/query[1]").instance;
+				
+				if (esquema.isCommitPending())
+				{
+					Missatgebox.avis(org.zkoss.util.resource.Labels
+							.getLabel("usuaris.Confirmar"),
+						org.zkoss.util.resource.Labels.getLabel("usuaris.CanvisPendents"));
+				}
+				
+				getSearchParameters();
+				
+				if (!retrySearch)
+				{
+					criteria.setFromDate(criteria.getFromDate());
+					criteria.setGroup(es.caib.seycon.ng.web.utils.Autowildcards
+							.replaceAsteriskChar(criteria.getGroup()));
+					criteria.setInformationSystem(es.caib.seycon.ng.web.utils.Autowildcards
+							.replaceAsteriskChar(criteria.getInformationSystem()));
+					criteria.setName(es.caib.seycon.ng.web.utils.Autowildcards
+							.replaceAsteriskChar(criteria.getName()));
+					criteria.setStatus(criteria.getStatus());
+					criteria.setToDate(criteria.getToDate());
+				}
+				
+				else
+				{
+					criteria.setFromDate(criteria.getFromDate());
+					criteria.setGroup(es.caib.seycon.ng.web.utils.Autowildcards
+							.addPercentChar(criteria.getGroup()));
+					criteria.setInformationSystem(es.caib.seycon.ng.web.utils.Autowildcards
+							.addPercentChar(criteria.getInformationSystem()));
+					criteria.setName(es.caib.seycon.ng.web.utils.Autowildcards
+							.addPercentChar(criteria.getName()));
+					criteria.setStatus(criteria.getStatus());
+					criteria.setToDate(criteria.getToDate());
+				}
+				
+				model.getVariables().declareVariable("queryEnabled", queryEnabled);
+				listbox = esquema.getFellow("lista").getFellow("listbox");
+				if (queryEnabled)
+				{
+					model.getJXPathContext().getValue("/process").refresh();
+				}
+				
+				if (listbox.getModel().getSize() == 1)
+				{
+					listbox.renderAll();
+					Listitem elem = listbox.getItemAtIndex(0);
+					if (elem != null)
+						listbox.setSelectedItem(elem);
+				
+					select();
+				}
+				
+				else
+				{
+					if ((listbox.getModel().getSize() == 0) && !retrySearch)
+					{
+						retrySearch = true;
+						search();
+					}
+					
+					else
+					{
+						esquema.tancaDetalls(); //amaguem dades..
+						retrySearch = false;
+					}
+				}
+				
+				checkTruncatedList(listbox);
+			}
+			
+			void showLista()
+			{
+				esquema.getFellow("lista").getFellow("listbox").clearSelection();
+				esquema.getFellow("lista").getFellow("listbox").setRows(fileresO);
+			}
+			
+			void select ()
+			{
+				if((esquema.getFellow("lista")
+							.getFellow("listbox").selectedItem != null) &&
+						(esquema.getFellow("lista").getFellow("listbox")
+							.selectedItem.value != null))
+				{
+					showDetall ();
+				}
+			}
+			
+			void showDetall()
+			{
+				esquema.hideCriteris();
+				esquema.getFellow("lista").getFellow("listbox").setRows(5);
+				esquema.showFormulari();
+			}
+			
+			void selectGroup()
+			{
+				if((esquema.getFellow("dades").getFellow("form")
+						.getFellow("listboxGroups").selectedItem != null) &&
+					(esquema.getFellow("dades").getFellow("form")
+						.getFellow("listboxGroups").selectedItem.value != null))
+				{
+					showDetallGroup();
+				}
+			}
+			
+			void showDetallGroup()
+			{
+				esquema.hideCriteris();
+				esquema.getFellow("dades").getFellow("form")
+						.getFellow("listboxGroups").setRows(5);
+//				esquema.showFormulari();
+			}
+		]]>
+	</zscript>
+
+	<esquemavertical id="esquema" datamodel="/model" focusCriteri="queryName"
+		onHideFormulari="showLista()">
+		
+		<form dataPath="/model:/query">
+			<criteris id="queryWindow" height="${queryWindowMin}" onOK="search()"
+				width="${amplaria}">
+				<vbox width="60%">
+					<hbox>
+						<input_criteri id="queryName" etiqueta="Name" bind="@name" />
+						<input_criteri_data id="queryStartDate" format="dd/MM/yyyy HH:mm"
+							etiqueta="${c:l('recertification.StartDate')}" bind="@fromDate"/>
+						<input_criteri_data id="queryEndDate" format="dd/MM/yyyy HH:mm"
+							etiqueta="${c:l('recertification.EndDate')}" bind="@toDate" />
+						
+						<imageclic onClick="search()" src="~./img/fletxa_cerca.gif" />
+					</hbox>
+					
+					<hbox>
+						<label sclass="etiqueta" value="${c:l('recertification.Status')}" />
+						<listbox id="queryStatus" bind="@status" mold="select"
+							width="100px" dataPath="/model:/processStatus">
+							<dataitem bind=".">
+								<listcell bind="@literal" />
+							</dataitem>
+						</listbox>
+						
+						<input_criteri id="queryGroup" etiqueta="${c:l('recertification.Group')}" bind="@group" />
+						<input_criteri id="queryApplication" etiqueta="${c:l('recertification.Application')}"
+							bind="@informationSystem" />
+					</hbox>
+				</vbox>
+			</criteris>
+		</form>
+		
+		<navegador id="lista" width="${amplaria}">
+			<listbox id="listbox" autocommit="false" dataPath="/model:/process"
+				fixedLayout="true" height="96%" onClick="showDetall()"
+				onSelect="select()" rows="${fileres}" onCreate="checkTruncatedList(self)">
+				<listhead>
+					<listheader label="${c:l('recertification.Name')}" sort="auto" />
+					<listheader label="${c:l('recertification.StartDate')}" sort="auto" width="200px"/>
+					<listheader label="${c:l('recertification.FinishDate')}" sort="auto" width="200px"/>
+					<listheader label="${c:l('recertification.Status2')}" sort="auto" />
+				</listhead>
+				<listfoot>
+					<listfooter span="3">
+						<label id="listboxFoot" style="margin-left: 10px;" />
+					</listfooter>
+				</listfoot>
+				<dataitem bind=".">
+					<listcell bind="@name" />
+					<listcell >
+						<datebox bind="@startDate" disabled="true" width="150px"
+						 style="background-color: white;"
+						 format="${c:l('usuaris.zul.dateFormat')}" />
+					</listcell>
+					<listcell>
+						<datebox bind="@finishDate" disabled="true" width="150px"
+						 style="background-color: white;"
+						 format="${c:l('usuaris.zul.dateFormat')}" />
+					</listcell>
+					<listcell bind="@statusLiteral"/>
+				</dataitem>
+			</listbox>
+		</navegador>
+		
+		<detalls id="dades" width="${amplaria}">
+			<form id="form" dataPath="/esquema/lista/listbox:/." width="99%">
+				<hbox>
+					<listbox id="listboxGroups" dataPath="/esquema/lista/listbox:/group"
+						fixedLayout="true" onSelect="selectGroup()" onClick="showDetallGroups">
+						<listhead>
+							<listheader label="${c:l('recertification.Group')}" />
+							<listheader label="${c:l('recertification.Manager')}" />
+							<listheader label="${c:l('recertification.Status2')}" />
+							<listheader label="${c:l('recertification.done')}% done" />
+						</listhead>
+						
+						<dataitem bind=".">
+							<listcell bind="@group" />
+							<listcell bind="@managerRole" />
+							<listcell bind="@statusLiteral" />
+							<listcell bind="@pctDone" />
+						</dataitem>
+					</listbox>
+					
+					<grid id="listboxIS" dataPath="/esquema/lista/listbox:/is"
+						fixedLayout="true">
+						<columns>
+							<column label="${c:l('recertification.Application')}"/>
+						</columns>
+						
+						<datarow>
+							<label bind="@informationSystem"/>
+						</datarow>
+					</grid>
+				</hbox>
+			
+				<grid id="gridUsers" dataPath="/esquema/dades/listboxGroups:/users">
+					<columns>
+						<column label="${c:l('recertification.Active')}"/>
+						<column label="${c:l('recertification.User')}"/>
+						<column label="${c:l('recertification.CreationDate')}"/>
+						<column label="${c:l('recertification.Status2')}" />
+						<column label="${c:l('recertification.UserDate')}"/>
+						<column label="${c:l('recertification.BossDate')}"/>
+					</columns>
+					
+					<datarow>
+						<checkbox bind="@activeAccount" disabled="true"/>
+						<label bind="@user"/>
+						<datebox bind="@createdOn" disabled="true" width="150px"
+						 format="${c:l('usuaris.zul.dateFormat')}" />
+						<label bind="@statusLiteral"/>
+						<datebox bind="@userReview" disabled="true" width="150px"
+						 format="${c:l('usuaris.zul.dateFormat')}" />
+						<datebox bind="@bossReview" disabled="true" width="150px"
+						 format="${c:l('usuaris.zul.dateFormat')}" />
+					</datarow>
+				</grid>
+			</form>
+		</detalls>
+	</esquemavertical>
+</zk>

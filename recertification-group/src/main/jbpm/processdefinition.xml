@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.3"
+	name="Group Recertification process">
+	<description>
+		Process to execute recertification tasks.
+	</description>
+
+
+	<start-state name="Start">
+		<description>
+			Starts a recertification group process
+		</description>
+		<transition to="Review staff list"></transition>
+	</start-state>
+
+
+	<task-node name="Review staff list">
+		<description>
+			Boss can remove any user from the list. Their users will be disabled.
+		</description>
+		<task name="Review authorized users list">
+			<assignment class="com.soffid.iam.recertification.bpm.TaskAssignmentHandler"></assignment>
+		</task>
+		<transition to="Cancelled" name="Cancel"></transition>
+		<transition to="Create recertification task" name="Create recertification task"></transition>
+	</task-node>
+
+	<node name="Create recertification task">
+		<action name="Create recertification info" class="com.soffid.iam.recertification.bpm.CreateRecertificationTaskHandler"></action>
+		<transition to="Waiting for group certification"></transition>
+	</node>
+
+	<state name="Waiting for group certification">
+		<transition to="Cancelled" name="Cancel"></transition>
+		<transition to="End" name="End"></transition>
+	</state>
+
+
+	<end-state name="Cancelled"></end-state>
+
+	<end-state name="End"></end-state>
+
+
+	<event type="process-end">
+		<action name="User recertification finished" class="com.soffid.iam.recertification.bpm.EndGroupRecertificationHandler"></action>
+	</event>
+</process-definition>

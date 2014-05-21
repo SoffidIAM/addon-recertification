@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process>
+	<tag>${pom.version}</tag>
+	<roles>
+		<initiator>
+			<user name="-"/>
+		</initiator>
+		<supervisor>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</supervisor>
+
+		<observer>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</observer>
+	</roles>
+
+	<task name="Review authorized users list">
+		<file path="ui/recertificateReviewStaffList.zul" />
+	</task>
+	
+	<upgrade>
+		<process>
+			<tag>1.0.0-beta</tag>
+		</process>
+
+		<process>
+			<tag>1.0.0</tag>
+		</process>
+
+		<process>
+			<tag>${project.version}</tag>
+			<task source="Select business units" target="Review authorized users list"/>
+		</process>
+	</upgrade>
+</process>

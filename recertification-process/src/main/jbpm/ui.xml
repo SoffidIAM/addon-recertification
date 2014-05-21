@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process>
+	<tag>${pom.version}</tag>
+	<roles>
+		<initiator>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</initiator>
+
+		<supervisor>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</supervisor>
+
+		<observer>
+			<role name="SEU_ADMIN" />
+			<role name="SOFFID_ADMIN" />
+		</observer>
+	</roles>
+
+	<task name="Select business units">
+		<file path="ui/recertificateBUform.zul" />
+	</task>
+	
+	<upgrade>
+		<process>
+			<tag>${project.version}</tag>
+		</process>
+	</upgrade>
+</process>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zkib-model>
+	<datanode name="root">
+		<finder name="group" type="group">
+			<ejb-finder jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedGroup"
+				if="${query}">
+				<parameter value="${recertifiedGroupId}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="process">
+		<finder name="app" type="app">
+			<ejb-finder jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedInformationSystems">
+				<parameter value="${instance}" />
+			</ejb-finder>
+			<new-instance-bean className="com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem"/>
+		</finder>
+	</datanode>
+	
+	<datanode name="app" />
+	
+	<datanode name="group">
+		<finder name="process" type="process">
+			<ejb-finder jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertificationProcess">
+				<parameter value="${instance.processId}" />
+			</ejb-finder>
+		</finder>
+		
+		<finder name="user" type="user">
+			<ejb-finder jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedUsers">
+				<parameter value="${instance}" />
+			</ejb-finder>
+			<new-instance-bean className="com.soffid.iam.addons.recertification.common.RecertifiedUser"/>
+		</finder>
+	</datanode>
+	
+	<datanode name="user">
+		<ejb-handler jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService">
+			<update-method method="enableUser">
+				<parameter value="${instance}" />
+				<parameter value="${instance.activeAccount}" />
+			</update-method>
+		</ejb-handler>
+		<finder name="usuari" type="user">
+			<ejb-finder jndi="soffid/ejb/es.caib.seycon.ng.servei.UsuariService"
+				method="findUsuariByCodiUsuari">
+				<parameter value="${instance.user}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="usuari"/>
+</zkib-model>

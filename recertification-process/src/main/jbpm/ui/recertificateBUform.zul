@@ -1,0 +1,252 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<task id="window" onSave="model.commit()"
+		onPrepareTransition="model.commit()" width="100%">
+		<attribute name="onPrepareTransition">
+			<![CDATA[
+//				lb = self.getFellow("listboxBU");
+//				if ((lb.getSelectedItem() == null) || 
+//						(lb.getSelectedItem().getValue() == null))
+//				{
+//					if (!event.data.equals("Cancel"))
+//					{
+//						throw new es.caib.bpm.toolkit.exception
+//							.UserWorkflowException("\nPlease, select a group to continue");
+//					}
+//				}
+			]]>
+		</attribute>
+		
+		<datamodel id="model" rootNode="root" src="bpm/descriptorBU.xml" />
+		
+		<zscript>
+			<![CDATA[
+				com.soffid.iam.recertification.ui.RecertificateMessages msg = new com.soffid.iam.recertification.ui.RecertificateMessages();
+				
+				Long id = window.getTask().getVariables().get(com.soffid.iam.addons
+						.recertification.Constants.RECERTIFICATION_ID_VAR);
+				
+				model.getJXPathContext().getVariables().declareVariable("processId", id);
+				
+				void addExistingGroup(Component comp)
+				{
+					desktop.getPage("grupsLlista").setAttribute("tipus", "");
+					desktop.getPage("grupsLlista").setAttribute("llistaObsolets", false);
+					Events.postEvent("onInicia",
+							desktop.getPage("grupsLlista").getFellow("esquemaLlista"), comp);
+				}
+				
+				void addExistingRole(Component comp)
+				{
+					desktop.getPage("rolsLlista").setAttribute("tipus", "cap");
+					desktop.getPage("rolsLlista").setAttribute("mostraGestionableWF",
+							"true");
+//					desktop.getPage("rolsLlista").setAttribute("rol_bbdd", "soffid");
+					Events.postEvent("onInicia",
+							desktop.getPage("rolsLlista").getFellow("esquemaLlista"), comp);
+				}
+				
+				void addExistingIS(Component comp)
+				{
+					Events.postEvent("onInicia",
+							desktop.getPage("aplicacionsLlista").getFellow("esquemaLlista"),
+							comp);
+				}
+				
+				void updateGroupData (Object[] data)
+				{
+					Textbox tb = self.getParent().getChildren().get(2);
+					tb.setValue((String) (data[0]));
+				}
+				
+				void updateManagerData(Object[] data)
+				{
+					Textbox tb = self.getParent().getChildren().get(0);
+					tb.setValue((String) (data[0]));
+					
+//					String path = es.caib.zkib.datasource
+//							.XPathUtils.createPath(model, "/process[1]/group");
+//					
+//					model.getJXPathContext().setValue(path + "/@managerRole",
+//							tb.getValue());
+				}
+				
+				void updateISData(String data)
+				{
+					Textbox tb = self.getParent().getChildren().get(2);
+					tb.setValue(data);
+				}
+				
+				void addGroup ()
+				{
+					String path = es.caib.zkib.datasource
+							.XPathUtils.createPath(model, "/process[1]/group");
+					
+					model.getJXPathContext().setValue(path + "/@status",
+							com.soffid.iam.addons.recertification
+								.common.ProcessStatus.PREPARATION);
+					model.getJXPathContext().setValue(path + "/@group",
+							txtGrupID.getValue());
+					model.getJXPathContext().setValue(path + "/@managerRole",
+							"SOFFID_OUMANAGER/"+txtGrupID.getValue());
+					model.getJXPathContext().setValue(path + "/@processId", id);
+					
+					txtGrupID.setValue("");
+				}
+				
+				void addIS()
+				{
+					String path = es.caib.zkib.datasource
+							.XPathUtils.createPath(model, "/process[1]/app");
+					
+					model.getJXPathContext().setValue(path + "/@informationSystem",
+							txtIS.getValue());
+					model.getJXPathContext().setValue(path + "/@processId", id);
+					
+					txtIS.setValue("");
+				}
+				
+				void deleteGroup (Component c)
+				{
+					es.caib.zkib.binder.BindContext ctx = es.caib.zkib.datasource
+							.XPathUtils.getComponentContext(c);
+					String pathToRemove = ctx.getXPath();
+					es.caib.zkib.datasource.XPathUtils.removePath(model, pathToRemove);
+				}
+				
+				void deleteApp (Component c)
+				{
+					es.caib.zkib.binder.BindContext ctx = es.caib.zkib.datasource
+							.XPathUtils.getComponentContext(c);
+					String pathToRemove = ctx.getXPath();
+					es.caib.zkib.datasource.XPathUtils.removePath(model, pathToRemove);
+				}
+			]]>
+		</zscript>
+		
+		<hbox>
+			<label value="${msg['description']}"/>
+			<textbox bind="/window/model:/process[1]/@name" width="50em"/>
+		</hbox>
+		<hbox widths="50%, *">
+			<vbox>
+				<grid id="gridGroups" width="98%">
+					<columns>
+						<column label="${msg['business']}" />
+					</columns>
+					
+					<rows>
+						<row>
+							<hbox>
+								<label value="${msg['selectgroup']}"/>
+								<separator spacing="5px" />
+								
+								<textbox id="txtGrupID" bind="@codi" sclass="textbox" />
+								<separator spacing="5px" />
+								
+								<imageclic src="~./img/grup.gif" tooltiptext="${msg['searchgroup']}">
+									<attribute name="onClick">
+										addExistingGroup(self);
+									</attribute>
+									<attribute name="onActualitza">
+										updateGroupData(event.data);
+									</attribute>
+								</imageclic>
+								
+								<imageclic src="~./img/list-add.gif" tooltiptext="${msg['addgroup']}" 
+									onClick="addGroup()"/>
+							</hbox>
+						</row>
+					</rows>
+				</grid>
+				
+				<grid width="98%" dataPath="/window/model:/process[1]/group">
+					<columns>
+						<column label="${msg['group']}"/>
+						<column label="${msg['managerrole']}"/>
+						<column />
+					</columns>
+					
+					<datarow>
+						<label bind="@group"/>
+						
+						<hbox>
+							<textbox id="txtboxManager" bind="@managerRole"/>
+							<separator spacing="5px" />
+							
+							<imageclic id="btnGrantRole" src="~./img/list-add.gif"
+								tooltiptext="Select manager role">
+									<attribute name="onClick">
+										addExistingRole(self);
+									</attribute>
+									<attribute name="onActualitza">
+										updateManagerData(event.data);
+									</attribute>
+							</imageclic>
+						</hbox>
+						
+						<imageclic src="~./img/list-remove.gif" 
+							tooltiptext="Delete group" onClick="deleteGroup(self)"/>
+					</datarow>
+				</grid>
+			</vbox>
+			
+			<vbox >
+				<grid  width="98%" id="gridISs" >
+					<columns>
+						<column label="${msg['IS']}" />
+					</columns>
+					
+					<rows>
+						<row>
+							<hbox>
+								<label value="${msg['SelectApp']}"/>
+								<separator spacing="5px" />
+								
+								<textbox id="txtIS" bind="@appName" sclass="textbox" />
+								<separator spacing="5px" />
+								
+								<imageclic src="~./img/grup.gif" tooltiptext="${msg['SearchIS']}">
+									<attribute name="onClick">
+										addExistingIS(self);
+									</attribute>
+									<attribute name="onActualitza">
+										updateISData(event.data);
+									</attribute>
+								</imageclic>
+								
+								<imageclic src="~./img/list-add.gif" tooltiptext="${msg['AddIS']}" 
+									onClick="addIS()"/>
+							</hbox>
+						</row>
+					</rows>
+				</grid>
+				
+				<grid  width="98%" dataPath="/window/model:/process[1]/app">
+					<columns>
+						<column label="${msg['application']}"/>
+						<column />
+					</columns>
+					
+					<datarow>
+						<label bind="@informationSystem"/>
+						
+						<imageclic src="~./img/list-remove.gif" 
+							tooltiptext="Delete application" onClick="deleteApp(self)"/>
+					</datarow>
+				</grid>
+			</vbox>
+		</hbox>
+		<checkbox bind="@userReview" label="${msg['review']}" visible="false"/>
+	</task>
+<!-- 	<debugwindow></debugwindow> -->
+	
+	<include src="grupsllista.zul" />
+	<include src="rolsllista.zul" />
+	<include src="aplicacionsllista.zul" />
+</zk>

@@ -1,0 +1,65 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<task id="window" width="100%">
+		<attribute name="onLoad()">
+			<![CDATA[
+				Long id = window.getProcessInstance().getVariables().
+					get(com.soffid.iam.addons.recertification.Constants.RECERTIFICATION_ID_VAR);
+				
+				model.getJXPathContext().getVariables().declareVariable("processId", id);
+				model.refresh();				
+			]]>
+		</attribute>
+
+		<datamodel id="model" rootNode="root" src="bpm/descriptorBU.xml" />
+		
+		<zscript><![CDATA[
+				model.getJXPathContext().getVariables().declareVariable("processId", new Long(0));
+				msg = new com.soffid.iam.recertification.ui.RecertificateMessages();
+		]]></zscript>
+		
+		
+		<hbox>
+			<label value="${msg['description']}"/>
+			<textbox bind="/window/model:/process[1]/@name" width="80em"/>
+		</hbox>
+
+		<hbox widths="50%, *">
+			<vbox>
+				
+				<grid width="98%" dataPath="/window/model:/process[1]/group">
+					<columns>
+						<column label="${msg['group']}"/>
+						<column label="${msg['managerrole']}"/>
+						<column />
+					</columns>
+					
+					<datarow>
+						<label bind="@group"/>
+						
+						<label id="txtboxManager" bind="@managerRole"/>
+					</datarow>
+				</grid>
+			</vbox>
+			
+			<vbox >
+				<grid  width="98%" dataPath="/window/model:/process[1]/app">
+					<columns>
+						<column label="${msg['application']}"/>
+						<column />
+					</columns>
+					
+					<datarow>
+						<label bind="@informationSystem"/>
+					</datarow>
+				</grid>
+			</vbox>
+		</hbox>
+		<checkbox bind="@userReview" label="${msg['review']}" visible="false" />
+	</task>
+</zk>
