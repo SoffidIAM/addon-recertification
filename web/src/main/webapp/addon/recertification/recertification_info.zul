@@ -267,12 +267,12 @@
 					<listcell bind="@name" />
 					<listcell >
 						<datebox bind="@startDate" disabled="true" width="150px"
-						 style="background-color: white;"
+						 sclass="dateboxread" buttonVisible="false"
 						 format="${c:l('usuaris.zul.dateFormat')}" />
 					</listcell>
 					<listcell>
 						<datebox bind="@finishDate" disabled="true" width="150px"
-						 style="background-color: white;"
+						 sclass="dateboxread" buttonVisible="false"
 						 format="${c:l('usuaris.zul.dateFormat')}" />
 					</listcell>
 					<listcell bind="@statusLiteral"/>
@@ -289,7 +289,7 @@
 							<listheader label="${c:l('recertification.Group')}" />
 							<listheader label="${c:l('recertification.Manager')}" />
 							<listheader label="${c:l('recertification.Status2')}" />
-							<listheader label="${c:l('recertification.done')}% done" />
+							<listheader label="${c:l('recertification.done')}" />
 						</listhead>
 						
 						<dataitem bind=".">
@@ -326,11 +326,14 @@
 						<checkbox bind="@activeAccount" disabled="true"/>
 						<label bind="@user"/>
 						<datebox bind="@createdOn" disabled="true" width="150px"
+						 sclass="dateboxread" buttonVisible="false"
 						 format="${c:l('usuaris.zul.dateFormat')}" />
 						<label bind="@statusLiteral"/>
 						<datebox bind="@userReview" disabled="true" width="150px"
+						 sclass="dateboxread" buttonVisible="false"
 						 format="${c:l('usuaris.zul.dateFormat')}" />
 						<datebox bind="@bossReview" disabled="true" width="150px"
+						 sclass="dateboxread" buttonVisible="false"
 						 format="${c:l('usuaris.zul.dateFormat')}" />
 					</datarow>
 				</grid>

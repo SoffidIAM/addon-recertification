@@ -5,6 +5,7 @@
 //
 
 package com.soffid.iam.addons.recertification.core;
+import com.soffid.iam.addons.recertification.tothom;
 import com.soffid.mda.annotation.*;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,7 @@ public abstract class RecertificationService {
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
+	
 	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
 	@Transactional(rollbackFor={java.lang.Exception.class})
 	public com.soffid.iam.addons.recertification.common.RecertificationProcess update(
@@ -97,7 +99,7 @@ public abstract class RecertificationService {
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class})
+	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class, tothom.class})
 	@Transactional(rollbackFor={java.lang.Exception.class})
 	public com.soffid.iam.addons.recertification.common.RecertificationProcess getRecertificationProcess(
 		java.lang.Long id)
@@ -111,14 +113,14 @@ public abstract class RecertificationService {
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class})
+	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class,tothom.class})
 	@Transactional(rollbackFor={java.lang.Exception.class})
 	public java.util.List<com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem> getRecertifiedInformationSystems(
 		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class})
+	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class, tothom.class})
 	@Transactional(rollbackFor={java.lang.Exception.class})
 	public java.util.List<com.soffid.iam.addons.recertification.common.RecertifiedUser> getRecertifiedUsers(
 		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg)

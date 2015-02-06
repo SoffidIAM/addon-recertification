@@ -25,6 +25,7 @@ public abstract class RecertificationProcess {
 
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 
+	@Nullable
 	public java.lang.Integer pctDone;
 
 	public java.lang.String managerRole;

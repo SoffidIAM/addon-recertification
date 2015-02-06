@@ -27,7 +27,8 @@ public class EndProcessHandler implements ActionHandler {
 			boolean allFinished = true;
 			for (RecertifiedUser ru : svc.getRecertifiedUsers(rg))
 			{
-				if (ru.getStatus() == ProcessStatus.ACTIVE)
+				if (ru.getStatus().equals ( ProcessStatus.ACTIVE) ||
+						ru.getStatus().equals ( ProcessStatus.PREPARATION))
 				{
 					allFinished = false;
 					break;

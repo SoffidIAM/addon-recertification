@@ -270,12 +270,15 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		while (it.hasNext()) {
 			RolAccount ra = it.next();
 			boolean found = false;
-			for (RecertifiedInformationSystemEntity ris : rpe
-					.getInformationSystems()) {
-				if (ris.getInformationSystem().getCodi()
-						.equals(ra.getCodiAplicacio())) {
-					found = true;
-					break;
+			if (ra.getRuleId() == null)
+			{
+				for (RecertifiedInformationSystemEntity ris : rpe
+						.getInformationSystems()) {
+					if (ris.getInformationSystem().getCodi()
+							.equals(ra.getCodiAplicacio())) {
+						found = true;
+						break;
+					}
 				}
 			}
 			if (!found)
@@ -612,6 +615,8 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 						rre.setUser(rue);
 						getRecertifiedRoleEntityDao().create(rre);
 					}
+					rue.setStatus(ProcessStatus.ACTIVE);
+					getRecertifiedUserEntityDao().update(rue);
 				} else {
 					applyUserRecertification(rue);
 				}

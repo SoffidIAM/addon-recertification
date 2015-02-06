@@ -14,12 +14,14 @@ public abstract class RecertificationProcessCriteria {
 	public java.lang.String name;
 
 	@Nullable
+	@CriteriaColumn( parameter="startDate", comparator="GREATER_THAN")
 	public java.util.Calendar fromDate;
 
 	@Nullable
 	public java.lang.Long workflowId;
 
 	@Nullable
+	@CriteriaColumn( parameter="startDate", comparator="LESS_THAN")
 	public java.util.Calendar toDate;
 
 	@Nullable

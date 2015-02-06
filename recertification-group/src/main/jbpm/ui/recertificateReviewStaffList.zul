@@ -5,13 +5,13 @@
 	xsi:schemaLocation="http://www.zkoss.org/2005/zul
 		http://www.zkoss.org/2005/zul/zul.xsd">
 
-	<task id="window" onSave="model.commit()" onPrepareTransition="model.commit()" >
+	<task id="recwindow" onSave="model.commit()" onPrepareTransition="model.commit()" >
 		
 		<datamodel id="model" rootNode="root" src="bpm/descriptorStaff.xml" />
 		
 		<zscript>
 			<![CDATA[
-				Long id = window.getTask().getVariables().get(com.soffid.iam.addons
+				Long id = recwindow.getTask().getVariables().get(com.soffid.iam.addons
 						.recertification.Constants.RECERTIFICATION_GROUP_ID_VAR);
 				
 				model.getJXPathContext().getVariables()
@@ -27,10 +27,10 @@
 		
 		<hbox>
 			<label value="${msg['recertification.group.RecertificationDescription']}"></label>
-			<label bind="/window/model:/group/@group"></label>
+			<label bind="/recwindow/model:/group/@group"></label>
 		</hbox>
 
-		<grid dataPath="/window/model:/group/user">
+		<grid dataPath="/recwindow/model:/group/user">
 			<columns>
 				<column label="${msg['recertification.group.User']}"/>
 				<column label="${msg['recertification.group.FirstName']}"/>
@@ -39,21 +39,21 @@
 			</columns>
 			
 			<datarow>
-				<label id="lblUserName" bind="@user"/>
+				<label bind="@user"/>
 				<label bind="/usuari[1]/@nom"/>
 				<label bind="/usuari[1]/@primerLlinatge"/>
-				<checkbox id="checkActive" bind="@activeAccount" />
+				<checkbox bind="@activeAccount" />
 			</datarow>
 		</grid>
 
-		<hbox width="100%">
-			<label value="${msg['recertification.group.IS']}"></label>
-			<listbox mold="paging" rows="5" dataPath="/window/model:/group[1]/process[1]/app" width="50em">
-				<dataitem>
-					<listcell bind="@informationSystem"/>
-				</dataitem>
-			</listbox>
-		</hbox>
+		<grid mold="paging" pageSize="10" dataPath="/recwindow/model:/group[1]/process[1]/app" width="50em" style="margin-top: 2em">
+			<columns>
+				<column label="${msg['recertification.group.IS']}"/>
+			</columns>
+			<datarow>
+				<label bind="@informationSystem"/>
+			</datarow>
+		</grid>
 
 	</task>
 </zk>

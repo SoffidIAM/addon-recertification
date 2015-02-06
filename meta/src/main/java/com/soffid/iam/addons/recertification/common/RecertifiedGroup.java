@@ -17,6 +17,7 @@ public abstract class RecertifiedGroup {
 
 	public java.lang.String group;
 
+	@Nullable
 	public java.lang.Integer pctDone;
 
 	public java.lang.Long processId;

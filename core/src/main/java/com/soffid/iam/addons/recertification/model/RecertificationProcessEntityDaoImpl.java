@@ -34,7 +34,7 @@ public class RecertificationProcessEntityDaoImpl extends RecertificationProcessE
 				for (RecertifiedUserEntity user: group.getUsers())
 				{
 					total ++;
-					if (group.getStatus() != ProcessStatus.ACTIVE || user.getStatus() != ProcessStatus.ACTIVE )
+					if (group.getStatus() != ProcessStatus.ACTIVE && user.getStatus() != ProcessStatus.ACTIVE )
 					{
 						done ++;
 					}

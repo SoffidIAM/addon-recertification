@@ -21,7 +21,9 @@ public class RecertifiedGroupEntityDaoImpl extends RecertifiedGroupEntityDaoBase
 		// Missing attribute pctDone on entity
 		super.toRecertifiedGroup(source, target);
 		
-		if (source.getStatus() != ProcessStatus.ACTIVE)
+		if (source.getStatus() == ProcessStatus.PREPARATION)
+			target.setPctDone(0);
+		else if (source.getStatus() != ProcessStatus.ACTIVE)
 			target.setPctDone(100);
 		else
 		{
