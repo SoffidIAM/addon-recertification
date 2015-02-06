@@ -3,7 +3,7 @@
   <parent>
     <artifactId>recertification</artifactId>
     <groupId>com.soffid.iam.addon.recertification</groupId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0-beta-1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>recertification-addon</artifactId>
@@ -97,7 +97,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore/>
+                    <ignore />
                   </action>
                 </pluginExecution>
                 <pluginExecution>
@@ -116,7 +116,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore/>
+                    <ignore />
                   </action>
                 </pluginExecution>
                 <pluginExecution>
@@ -135,7 +135,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore/>
+                    <ignore />
                   </action>
                 </pluginExecution>
                 <pluginExecution>
@@ -154,7 +154,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore/>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>
