@@ -34,7 +34,7 @@
         </executions>
         <configuration>
           <translate>false</translate>
-          <pluginName>backup</pluginName>
+          <pluginName>recertification</pluginName>
         </configuration>
       </plugin>
       <plugin>
