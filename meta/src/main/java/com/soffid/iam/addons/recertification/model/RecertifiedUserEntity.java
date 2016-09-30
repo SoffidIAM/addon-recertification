@@ -34,6 +34,15 @@ public abstract class RecertifiedUserEntity {
 	@Nullable
 	public java.util.Date bossReview;
 
+	@Column (name="RUS_CISORW")
+	@Nullable
+	public java.util.Date cisoReview;
+
+	@Column (name="RUS_APOWRW")
+	@Nullable
+	public java.util.Date appOwnerReview;
+
+
 	@Column (name="RUS_STATUS")
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 

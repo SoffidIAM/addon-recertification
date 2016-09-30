@@ -34,7 +34,27 @@ public abstract class RecertificationProcessEntity {
 
 	@Column (name="RPR_STATUS")
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
+	
+	@Column (name="RPR_TYPE", defaultValue="com.soffid.iam.addons.recertification.common.RecertificationType.ENTITLEMENTS")
+	@Nullable
+	public com.soffid.iam.addons.recertification.common.RecertificationType type;
 
+	@Column (name="RPR_USER")
+	@Nullable
+	Boolean userReview;
+
+	@Column (name="RPR_APOWRV")
+	@Nullable
+	Boolean appOwnerReview;
+
+	@Column (name="RPR_CISORV")
+	@Nullable
+	Boolean cisoReview;
+
+	@Column (name="RPR_CISORO")
+	@Nullable
+	String cisoRole;
+	
 	@ForeignKey (foreignColumn="RIS_PROCES")
 	public java.util.Collection<com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemEntity> informationSystems;
 

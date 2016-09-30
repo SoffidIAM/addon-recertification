@@ -120,6 +120,13 @@
 	</datanode>
 	
 	<datanode name="is">
+		<finder name="roles" type="roles">
+			<ejb-finder
+				jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedRoles">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
 		<custom-attribute name="statusLiteral">
 			if (instance.status ==
 				com.soffid.iam.addons.recertification.common.ProcessStatus.ACTIVE)
@@ -139,6 +146,7 @@
 		</custom-attribute>
 	</datanode>
 	
+	<datanode name="roles" />
 	<datanode name="processStatus">
 		<custom-attribute name="literal">
 			import com.soffid.iam.addons.recertification.common.*;

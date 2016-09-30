@@ -21,6 +21,12 @@ public class RecertifiedGroupEntityDaoImpl extends RecertifiedGroupEntityDaoBase
 		// Missing attribute pctDone on entity
 		super.toRecertifiedGroup(source, target);
 		
+		boolean cisoReview = source.getProcess().getCisoReview() != null &&
+				source.getProcess().getCisoReview().booleanValue();
+		
+		boolean userReview = source.getProcess().getUserReview() != null &&
+				source.getProcess().getUserReview().booleanValue();
+		
 		if (source.getStatus() == ProcessStatus.PREPARATION)
 			target.setPctDone(0);
 		else if (source.getStatus() != ProcessStatus.ACTIVE)
@@ -31,11 +37,13 @@ public class RecertifiedGroupEntityDaoImpl extends RecertifiedGroupEntityDaoBase
 			long done = 0;
 			for (RecertifiedUserEntity user: source.getUsers())
 			{
-				total ++;
-				if (user.getStatus() != ProcessStatus.ACTIVE )
-				{
-					done ++;
-				}
+				total += 2;
+				if (cisoReview) total ++;
+				if (userReview) total ++;
+				if (user.getUserReview() != null ) done ++;
+				if (user.getBossReview() != null) done ++;
+				if (user.getAppOwnerReview() != null) done ++;
+				if (cisoReview && user.getCisoReview() != null) done ++;
 			}
 			if (total == 0)
 				target.setPctDone(100);

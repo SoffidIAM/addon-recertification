@@ -15,6 +15,15 @@ public abstract class RecertifiedInformationSystem {
 
 	public java.lang.String informationSystem;
 
+	@Nullable
 	public java.lang.Long processId;
 
+	@Nullable
+	public String appOwnerRole;
+
+	@Nullable
+	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
+
+	@Nullable
+	public java.lang.Integer pctDone;
 }

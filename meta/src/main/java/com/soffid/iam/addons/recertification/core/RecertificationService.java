@@ -5,212 +5,340 @@
 //
 
 package com.soffid.iam.addons.recertification.core;
-import com.soffid.iam.addons.recertification.tothom;
-import com.soffid.mda.annotation.*;
-
 import org.springframework.transaction.annotation.Transactional;
+
+import com.soffid.iam.addons.recertification.recertification_manage;
+import com.soffid.iam.addons.recertification.recertification_query;
+import com.soffid.iam.addons.recertification.tothom;
+import com.soffid.iam.addons.recertification.common.RecertificationProcess;
+import com.soffid.iam.addons.recertification.common.RecertificationProcessCriteria;
+import com.soffid.iam.addons.recertification.common.RecertifiedGroup;
+import com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem;
+import com.soffid.iam.addons.recertification.common.RecertifiedRole;
+import com.soffid.iam.addons.recertification.common.RecertifiedRoleDefinition;
+import com.soffid.iam.addons.recertification.common.RecertifiedUser;
+import com.soffid.iam.addons.recertification.model.RecertificationProcessEntity;
+import com.soffid.iam.addons.recertification.model.RecertifiedGroupEntity;
+import com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemEntity;
+import com.soffid.iam.addons.recertification.model.RecertifiedRoleDefinitionEntity;
+import com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity;
+import com.soffid.iam.addons.recertification.model.RecertifiedUserEntity;
+import com.soffid.mda.annotation.Depends;
+import com.soffid.mda.annotation.Operation;
+import com.soffid.mda.annotation.Service;
+
+import es.caib.bpm.servei.BpmEngine;
+import es.caib.seycon.ng.exception.InternalErrorException;
+import es.caib.seycon.ng.model.RolEntity;
+import es.caib.seycon.ng.servei.AccountService;
+import es.caib.seycon.ng.servei.AplicacioService;
+import es.caib.seycon.ng.servei.GrupService;
+import es.caib.seycon.ng.servei.InternalPasswordService;
+import es.caib.seycon.ng.servei.UsuariService;
 
 @Service ( translatedName="RecertificationService",
 	 translatedPackage="com.soffid.iam.addons.recertification.core")
-@Depends ({com.soffid.iam.addons.recertification.model.RecertificationProcessEntity.class,
-	com.soffid.iam.addons.recertification.model.RecertifiedGroupEntity.class,
-	com.soffid.iam.addons.recertification.model.RecertifiedUserEntity.class,
-	com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity.class,
-	com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemEntity.class,
-	es.caib.bpm.servei.BpmEngine.class,
-	es.caib.seycon.ng.servei.GrupService.class,
-	es.caib.seycon.ng.servei.UsuariService.class,
-	es.caib.seycon.ng.servei.AplicacioService.class,
-	es.caib.seycon.ng.servei.InternalPasswordService.class,
-	es.caib.seycon.ng.servei.AccountService.class})
+@Depends ({RecertificationProcessEntity.class,
+	RecertifiedGroupEntity.class,
+	RecertifiedUserEntity.class,
+	RecertifiedRoleEntity.class,
+	RecertifiedInformationSystemEntity.class,
+	RecertifiedRoleDefinitionEntity.class,
+	BpmEngine.class,
+	GrupService.class,
+	UsuariService.class,
+	AplicacioService.class,
+	InternalPasswordService.class,
+	RolEntity.class,
+	AccountService.class})
 public abstract class RecertificationService {
 
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertificationProcess create(
-		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertificationProcess create(
+		RecertificationProcess rp)
+		throws InternalErrorException {
 	 return null;
 	}
 	
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertificationProcess update(
-		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertificationProcess update(
+		RecertificationProcess rp)
+		throws InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void remove(
-		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
+		RecertificationProcess rp)
+		throws InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertifiedGroup create(
-		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg)
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedGroup create(
+		RecertifiedGroup rg)
+		throws InternalErrorException {
+	 return null;
+	}
+	@Operation ( grantees={recertification_manage.class, tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedGroup update(
+		RecertifiedGroup rg)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertifiedGroup update(
-		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg)
+
+	@Operation ( grantees={recertification_manage.class, tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedUser update(
+		RecertifiedUser ru)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void remove(
-		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg)
+		RecertifiedGroup rg)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
 	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem create(
-		com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem rg)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
-	 return null;
-	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem update(
-		com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem rg)
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedInformationSystem create(
+		RecertifiedInformationSystem rg)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={recertification_manage.class, tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedInformationSystem update(
+		RecertifiedInformationSystem rg)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	 return null;
+	}
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void remove(
-		com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem rg)
+		RecertifiedInformationSystem rg)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void startGroupRecertificationProcess(
-		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
+		RecertificationProcess rp)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public java.util.List<com.soffid.iam.addons.recertification.common.RecertificationProcess> findRecertificationProcesses(
-		com.soffid.iam.addons.recertification.common.RecertificationProcessCriteria q)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
-	 return null;
-	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class, tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertificationProcess getRecertificationProcess(
-		java.lang.Long id)
+
+	@Operation ( grantees={recertification_query.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertificationProcess> findRecertificationProcesses(
+		RecertificationProcessCriteria q)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public java.util.List<com.soffid.iam.addons.recertification.common.RecertifiedGroup> getRecertifiedGroups(
-		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
+	@Operation ( grantees={recertification_query.class, tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertificationProcess getRecertificationProcess(
+		Long id)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class,tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public java.util.List<com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem> getRecertifiedInformationSystems(
-		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
+
+	@Operation ( grantees={recertification_query.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedGroup> getRecertifiedGroups(
+		RecertificationProcess rp)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class, tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public java.util.List<com.soffid.iam.addons.recertification.common.RecertifiedUser> getRecertifiedUsers(
-		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg)
+
+	@Operation ( grantees={recertification_query.class,tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedInformationSystem> getRecertifiedInformationSystems(
+		RecertificationProcess rp)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_query.class,com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public java.util.List<com.soffid.iam.addons.recertification.common.RecertifiedRole> getRecertifiedRoles(
-		com.soffid.iam.addons.recertification.common.RecertifiedUser ru)
+	@Operation ( grantees={recertification_query.class, tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedUser> getRecertifiedUsers(
+		RecertifiedGroup rg)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={recertification_query.class, tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedUser> getRecertifiedUsers(
+		RecertifiedGroup rg, RecertifiedInformationSystem is)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	 return null;
+	}
+	@Operation ( grantees={recertification_query.class,tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedRole> getRecertifiedRoles(
+		RecertifiedUser ru)
+		throws InternalErrorException {
+	 return null;
+	}
+	@Operation ( grantees={recertification_query.class,tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedRole> getRecertifiedRoles(
+		RecertifiedUser ru, RecertifiedInformationSystem is)
+		throws InternalErrorException {
+	 return null;
+	}
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void applyUserRecertification(
-		com.soffid.iam.addons.recertification.common.RecertifiedUser ru)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
+		RecertifiedUser ru)
+		throws InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void checkByUser(
-		com.soffid.iam.addons.recertification.common.RecertifiedRole rr, 
+		RecertifiedRole rr, 
 		boolean check)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
+		throws InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void checkByBoss(
-		com.soffid.iam.addons.recertification.common.RecertifiedRole rr, 
+		RecertifiedRole rr, 
 		boolean check)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void checkByAppOwner(
+		RecertifiedRole rr, 
+		boolean check)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void checkByCiso(
+		RecertifiedRole rr, 
+		boolean check)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void enableUser(
-		com.soffid.iam.addons.recertification.common.RecertifiedUser ru, 
+		RecertifiedUser ru, 
 		boolean disabled)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void cancelUserRecertification(
-		com.soffid.iam.addons.recertification.common.RecertifiedUser ru)
+		RecertifiedUser ru)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void cancelRecertification(
-		com.soffid.iam.addons.recertification.common.RecertificationProcess rp)
+		RecertificationProcess rp)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.recertification_manage.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void cancelGroupRecertification(
-		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg)
+		RecertifiedGroup rg)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void startUserRecertification(
-		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg)
+		RecertifiedGroup rg)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertifiedGroup getRecertifiedGroup(
-		java.lang.Long id)
-		throws es.caib.seycon.ng.exception.InternalErrorException {
-	 return null;
-	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
-	public com.soffid.iam.addons.recertification.common.RecertifiedUser getRecertifiedUser(
-		java.lang.Long id)
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedInformationSystem getRecertifiedInformationSystem(
+		Long id)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedGroup getRecertifiedGroup(
+		Long id)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	 return null;
+	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public RecertifiedUser getRecertifiedUser(
+		Long id)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	 return null;
+	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void setRecertifiedUserWorkflowId(
-		com.soffid.iam.addons.recertification.common.RecertifiedUser ru, 
-		java.lang.Long processId)
+		RecertifiedUser ru, 
+		Long processId)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
-	@Operation ( grantees={com.soffid.iam.addons.recertification.tothom.class})
-	@Transactional(rollbackFor={java.lang.Exception.class})
+	
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public void setRecertifiedGroupWorkflowId(
-		com.soffid.iam.addons.recertification.common.RecertifiedGroup rg, 
-		java.lang.Long processId)
+		RecertifiedGroup rg, 
+		Long processId)
+		throws InternalErrorException {
+	}
+	
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void setRecertifiedInformationSystemWorkflowId(
+		RecertifiedInformationSystem ris, 
+		Long processId)
+		throws InternalErrorException {
+	}
+	
+	// Methods for role definition recertification
+	@Operation ( grantees={recertification_query.class,tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedRoleDefinition> getRecertifiedRoles(
+		RecertifiedInformationSystem ris)
+		throws InternalErrorException {
+	 return null;
+	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void checkByAppOwner(
+			RecertifiedRoleDefinition rr, 
+		boolean check)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void checkByCiso(
+		RecertifiedRoleDefinition rr, 
+		boolean check)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+
+	@Operation ( grantees={recertification_manage.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void startInformationSystemRecertificationProcess(
+		RecertificationProcess rp)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+
+	@Operation ( grantees={recertification_manage.class, tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void applyInformationSystemRecertificationProcess(
+		RecertifiedInformationSystem rp)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
 }

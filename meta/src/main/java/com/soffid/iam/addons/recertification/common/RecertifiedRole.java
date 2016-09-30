@@ -17,8 +17,12 @@ public abstract class RecertifiedRole {
 
 	public boolean checkedByBoss;
 
+	public boolean checkedByAppOwner;
+
+	public boolean checkedByCiso;
+
 	public es.caib.seycon.ng.comu.RolAccount rol;
 
-	public java.lang.Long recertifiedUserId;
+	public Long recertifiedUserId;
 
 }

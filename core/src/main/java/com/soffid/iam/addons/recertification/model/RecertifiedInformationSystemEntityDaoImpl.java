@@ -5,8 +5,12 @@
 
 package com.soffid.iam.addons.recertification.model;
 
+import it.sauronsoftware.cron4j.ProcessTask;
+
 import org.hibernate.HibernateException;
 
+import com.soffid.iam.addons.recertification.common.ProcessStatus;
+import com.soffid.iam.addons.recertification.common.RecertificationType;
 import com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem;
 
 import es.caib.seycon.ng.model.AplicacioEntity;
@@ -26,6 +30,35 @@ public class RecertifiedInformationSystemEntityDaoImpl extends RecertifiedInform
 		target.setInformationSystem( source.getInformationSystem().getCodi() );
 		// Process ID
 		target.setProcessId(source.getProcess().getId());
+		// Calculate progress
+		long done = 0;
+		long total = 0;
+		if (source.getProcess().getType().equals(RecertificationType.ENTITLEMENTS))
+			target.setPctDone(null);
+		else if (source.getStatus() == ProcessStatus.PREPARATION)
+			target.setPctDone(0);
+		else if (source.getStatus() != ProcessStatus.ACTIVE)
+			target.setPctDone(100);
+		else 
+		{
+			for (RecertifiedRoleDefinitionEntity role: source.getRoles())
+			{
+				total ++;
+				if (role.isCheckedByOwner())
+					done ++;
+				if (source.getProcess().getCisoReview())
+				{
+					total ++;
+					if (role.isCheckedByCiso())
+						done++;
+				}
+			}
+			if (total == 0)
+				target.setPctDone(100);
+			else
+				target.setPctDone((int) (100 * done / total));
+		}
+
 	}
 
 	@Override

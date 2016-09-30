@@ -23,8 +23,11 @@ public class RecertifiedRoleEntityDaoImpl extends RecertifiedRoleEntityDaoBase
 		// Incompatible types source.rol and target.rol
 		// Missing attribute processId on entity
 		RolAccountEntity rae = getRolAccountEntityDao().load(source.getRolAccountId());
-		RolAccount rolAccount = getRolAccountEntityDao().toRolAccount(rae);
-		target.setRol(rolAccount);
+		if (rae != null)
+		{
+			RolAccount rolAccount = getRolAccountEntityDao().toRolAccount(rae);
+			target.setRol(rolAccount);
+		}
 		target.setRecertifiedUserId(source.getUser().getId());
 	}
 

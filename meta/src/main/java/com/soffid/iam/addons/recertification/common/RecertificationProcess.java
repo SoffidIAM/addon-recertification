@@ -29,5 +29,19 @@ public abstract class RecertificationProcess {
 	public java.lang.Integer pctDone;
 
 	public java.lang.String managerRole;
+	
+	@Attribute(defaultValue="RecertificationType.ENTITLEMENTS")
+	RecertificationType type;
 
+	@Nullable
+	Boolean appOwnerReview;
+	
+	@Nullable
+	Boolean cisoReview;
+
+	@Nullable
+	Boolean userReview;
+
+	@Nullable
+	String cisoRole;
 }

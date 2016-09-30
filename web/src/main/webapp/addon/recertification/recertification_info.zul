@@ -191,6 +191,18 @@
 				esquema.hideCriteris();
 				esquema.getFellow("lista").getFellow("listbox").setRows(5);
 				esquema.showFormulari();
+				Component form = esquema.getFellow("dades").getFellow("form");
+				RecertificationType type = es.caib.zkib.datasource.XPathUtils.getValue(form, "@type");
+				if (type == RecertificationType.ENTITLEMENTS)
+				{
+					form.getFellow ("gridUsers").setVisible(true);
+					form.getFellow ("listboxGroups").setVisible(true);
+					form.getFellow ("gridRoles").setVisible(false);
+				} else {
+					form.getFellow ("gridUsers").setVisible(false);
+					form.getFellow ("listboxGroups").setVisible(false);
+					form.getFellow ("gridRoles").setVisible(true);
+				}
 			}
 			
 			void selectGroup()
@@ -217,28 +229,29 @@
 	<esquemavertical id="esquema" datamodel="/model" focusCriteri="queryName"
 		onHideFormulari="showLista()">
 		
-		<form dataPath="/model:/query">
+		<form dataPath="/model:/query" width="100%">
 			<criteris id="queryWindow" height="${queryWindowMin}" onOK="search()"
-				width="${amplaria}">
-				<vbox width="60%">
+				width="100%">
+				<vbox>
 					<hbox>
 						<input_criteri id="queryName" etiqueta="Name" bind="@name" />
 						<input_criteri_data id="queryStartDate" format="dd/MM/yyyy HH:mm"
 							etiqueta="${c:l('recertification.StartDate')}" bind="@fromDate"/>
 						<input_criteri_data id="queryEndDate" format="dd/MM/yyyy HH:mm"
 							etiqueta="${c:l('recertification.EndDate')}" bind="@toDate" />
-						
 						<imageclic onClick="search()" src="~./img/fletxa_cerca.gif" />
 					</hbox>
 					
 					<hbox>
-						<label sclass="etiqueta" value="${c:l('recertification.Status')}" />
-						<listbox id="queryStatus" bind="@status" mold="select"
-							width="100px" dataPath="/model:/processStatus">
-							<dataitem bind=".">
-								<listcell bind="@literal" />
-							</dataitem>
-						</listbox>
+						<hbox width="250px" widths="100px, *">
+							<label style="display:inline-box" sclass="etiqueta" value="${c:l('recertification.Status')}" width="100ox"/>
+							<listbox id="queryStatus" bind="@status" mold="select"
+								width="150px" dataPath="/model:/processStatus">
+								<dataitem bind=".">
+									<listcell bind="@literal" />
+								</dataitem>
+							</listbox>
+						</hbox>
 						
 						<input_criteri id="queryGroup" etiqueta="${c:l('recertification.Group')}" bind="@group" />
 						<input_criteri id="queryApplication" etiqueta="${c:l('recertification.Application')}"
@@ -282,61 +295,84 @@
 		
 		<detalls id="dades" width="${amplaria}">
 			<form id="form" dataPath="/esquema/lista/listbox:/." width="99%">
-				<hbox>
-					<listbox id="listboxGroups" dataPath="/esquema/lista/listbox:/group"
-						fixedLayout="true" onSelect="selectGroup()" onClick="showDetallGroups">
-						<listhead>
-							<listheader label="${c:l('recertification.Group')}" />
-							<listheader label="${c:l('recertification.Manager')}" />
-							<listheader label="${c:l('recertification.Status2')}" />
-							<listheader label="${c:l('recertification.done')}" />
-						</listhead>
-						
-						<dataitem bind=".">
-							<listcell bind="@group" />
-							<listcell bind="@managerRole" />
-							<listcell bind="@statusLiteral" />
-							<listcell bind="@pctDone" />
-						</dataitem>
-					</listbox>
-					
-					<grid id="listboxIS" dataPath="/esquema/lista/listbox:/is"
-						fixedLayout="true">
-						<columns>
-							<column label="${c:l('recertification.Application')}"/>
-						</columns>
-						
-						<datarow>
-							<label bind="@informationSystem"/>
-						</datarow>
-					</grid>
-				</hbox>
-			
-				<grid id="gridUsers" dataPath="/esquema/dades/listboxGroups:/users">
-					<columns>
-						<column label="${c:l('recertification.Active')}"/>
-						<column label="${c:l('recertification.User')}"/>
-						<column label="${c:l('recertification.CreationDate')}"/>
-						<column label="${c:l('recertification.Status2')}" />
-						<column label="${c:l('recertification.UserDate')}"/>
-						<column label="${c:l('recertification.BossDate')}"/>
-					</columns>
-					
-					<datarow>
-						<checkbox bind="@activeAccount" disabled="true"/>
-						<label bind="@user"/>
-						<datebox bind="@createdOn" disabled="true" width="150px"
-						 sclass="dateboxread" buttonVisible="false"
-						 format="${c:l('usuaris.zul.dateFormat')}" />
-						<label bind="@statusLiteral"/>
-						<datebox bind="@userReview" disabled="true" width="150px"
-						 sclass="dateboxread" buttonVisible="false"
-						 format="${c:l('usuaris.zul.dateFormat')}" />
-						<datebox bind="@bossReview" disabled="true" width="150px"
-						 sclass="dateboxread" buttonVisible="false"
-						 format="${c:l('usuaris.zul.dateFormat')}" />
-					</datarow>
-				</grid>
+				<div>
+					<div style="width:48%; display: inline-block;  vertical-align:top; margin-right: 1%">
+						<listbox id="listboxGroups" dataPath="/esquema/lista/listbox:/group"
+							fixedLayout="true" onSelect="selectGroup()" onClick="showDetallGroups">
+							<listhead>
+								<listheader label="${c:l('recertification.Group')}" />
+								<listheader label="${c:l('recertification.Manager')}" />
+								<listheader label="${c:l('recertification.Status2')}" />
+								<listheader label="${c:l('recertification.done')}" />
+							</listhead>
+							
+							<dataitem bind=".">
+								<listcell bind="@group" />
+								<listcell bind="@managerRole" />
+								<listcell bind="@statusLiteral" />
+								<listcell bind="@pctDone" />
+							</dataitem>
+						</listbox>
+						<grid id="gridUsers" dataPath="/esquema/dades/listboxGroups:/users">
+							<columns>
+								<column label="${c:l('recertification.Active')}"/>
+								<column label="${c:l('recertification.User')}"/>
+								<column label="${c:l('recertification.CreationDate')}"/>
+								<column label="${c:l('recertification.Status2')}" />
+								<column label="${c:l('recertification.BossDate')}"/>
+								<column label="${c:l('recertification.AppOwnerDate')}"/>
+								<column label="${c:l('recertification.CisoDate')}"/>
+							</columns>
+							
+							<datarow>
+								<checkbox bind="@activeAccount" disabled="true"/>
+								<label bind="@user"/>
+								<datebox bind="@createdOn" disabled="true" width="110px"
+								 sclass="dateboxread" buttonVisible="false"
+								 format="${c:l('usuaris.zul.dateFormat')}" />
+								<label bind="@statusLiteral"/>
+								<datebox bind="@bossReview" disabled="true" width="110px"
+								 sclass="dateboxread" buttonVisible="false"
+								 format="${c:l('usuaris.zul.dateFormat')}" />
+								<datebox bind="@ownerReview" disabled="true" width="110px"
+								 sclass="dateboxread" buttonVisible="false"
+								 format="${c:l('usuaris.zul.dateFormat')}" />
+								<datebox bind="@cisoReview" disabled="true" width="110px"
+								 sclass="dateboxread" buttonVisible="false"
+								 format="${c:l('usuaris.zul.dateFormat')}" />
+							</datarow>
+						</grid>
+					</div>
+					<div style="width:49%; display: inline-block; vertical-align:top">
+						<listbox id="listboxIS" dataPath="/esquema/lista/listbox:/is"
+							fixedLayout="true">
+							<listhead>
+								<listheader label="${c:l('recertification.Application')}"/>
+								<listheader label="${c:l('recertification.Status2')}" />
+								<listheader label="${c:l('recertification.done')}" />
+							</listhead>
+							
+							<dataitem>
+								<listcell bind="@informationSystem"/>
+								<listcell bind="@statusLiteral" />
+								<listcell bind="@pctDone" />
+							</dataitem>
+						</listbox>
+						<grid id="gridRoles" dataPath="/esquema/dades/listboxIS:/roles">
+							<columns>
+								<column label="${c:l('recertification.Role')}"/>
+								<column label="${c:l('recertification.ownerReview')}"/>
+								<column label="${c:l('recertification.cisoReview')}"/>
+							</columns>
+							
+							<datarow>
+								<label bind="@roleName"/>
+								<checkbox bind="@checkedByOwner" disabled="true"/>
+								<checkbox bind="@checkedByCiso" disabled="true"/>
+							</datarow>
+						</grid>
+					</div>
+				</div>
 			</form>
 		</detalls>
 	</esquemavertical>

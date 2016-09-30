@@ -24,6 +24,12 @@ public abstract class RecertifiedUser {
 	@Nullable
 	public java.util.Calendar bossReview;
 
+	@Nullable
+	public java.util.Calendar appOwnerReview;
+
+	@Nullable
+	public java.util.Calendar cisoReview;
+
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 
 	public java.lang.String user;

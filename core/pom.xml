@@ -230,7 +230,7 @@
     <dependency>
       <groupId>com.soffid.iam.console</groupId>
       <artifactId>iam-core</artifactId>
-      <version xmlns:maven="http://maven.apache.org/POM/4.0.0">1.4.0-1</version>
+      <version xmlns:maven="http://maven.apache.org/POM/4.0.0">1.7.0</version>
       <scope>provided</scope>
       <type>ejb</type>
     </dependency>

@@ -7,6 +7,7 @@ package com.soffid.iam.addons.recertification.model;
 
 import com.soffid.iam.addons.recertification.common.ProcessStatus;
 import com.soffid.iam.addons.recertification.common.RecertificationProcess;
+import com.soffid.iam.addons.recertification.common.RecertificationType;
 
 /**
  * DAO RecertificationProcessEntity implementation
@@ -27,6 +28,28 @@ public class RecertificationProcessEntityDaoImpl extends RecertificationProcessE
 			target.setPctDone(0);
 		else if (source.getStatus() != ProcessStatus.ACTIVE)
 			target.setPctDone(100);
+		else if (source.getType().equals (RecertificationType.ROLEDEFINITIONS))
+		{
+			for (RecertifiedInformationSystemEntity is: source.getInformationSystems())
+			{
+				for (RecertifiedRoleDefinitionEntity role: is.getRoles())
+				{
+					total ++;
+					if (role.isCheckedByOwner())
+						done ++;
+					if (source.getCisoReview())
+					{
+						total ++;
+						if (role.isCheckedByCiso())
+							done++;
+					}
+				}
+			}
+			if (total == 0)
+				target.setPctDone(100);
+			else
+				target.setPctDone((int) (100 * done / total));
+		}
 		else
 		{
 			for (RecertifiedGroupEntity group: source.getGroups())

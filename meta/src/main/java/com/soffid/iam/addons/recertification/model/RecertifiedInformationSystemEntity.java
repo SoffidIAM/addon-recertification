@@ -24,4 +24,20 @@ public abstract class RecertifiedInformationSystemEntity {
 	@Column (name="RIS_IS")
 	public es.caib.seycon.ng.model.AplicacioEntity informationSystem;
 
+	@Column (name="RGR_ROLE")
+	@Nullable
+	public String appOwnerRole;
+
+	@Column (name="RGR_STATUS")
+	@Nullable
+	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
+
+	@Column (name="RGR_WFID")
+	@Nullable
+	public java.lang.Long processId;
+
+
+	@ForeignKey (foreignColumn="RRD_RIS_ID")
+	public java.util.Collection<com.soffid.iam.addons.recertification.model.RecertifiedRoleDefinitionEntity> roles;
+
 }

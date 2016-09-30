@@ -20,6 +20,7 @@ public abstract class RecertifiedGroupEntity {
 	public java.lang.Long id;
 
 	@Column (name="RGR_STATUS")
+	@Nullable
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 
 	@Column (name="RGR_PROCES")
