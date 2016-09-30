@@ -10,7 +10,7 @@
   <groupId>com.soffid.iam.addon.recertification</groupId>
   <artifactId>recertification-user-process-wf</artifactId>
   <packaging>jbpm</packaging>
-  <version>1.1.0</version>
+  <version>1.0.4</version>
   <licenses xmlns:maven="http://maven.apache.org/POM/4.0.0">
     <license>
       <name>GNU GPL Version 3.0</name>
