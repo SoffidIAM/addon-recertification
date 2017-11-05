@@ -1,8 +1,0 @@
-com/soffid/iam/recertification/bpm/OwnerAssignmentHandler.class
-com/soffid/iam/recertification/ui/RecertificateMessages.class
-com/soffid/iam/recertification/bpm/CisoAssignmentHandler.class
-com/soffid/iam/recertification/bpm/Messages.class
-com/soffid/iam/recertification/bpm/EndProcessHandler.class
-com/soffid/iam/recertification/bpm/ChangeTaskNameHandler.class
-com/soffid/iam/recertification/bpm/CisoDecisionHandler.class
-com/soffid/iam/recertification/bpm/ApplyChangesHandler.class

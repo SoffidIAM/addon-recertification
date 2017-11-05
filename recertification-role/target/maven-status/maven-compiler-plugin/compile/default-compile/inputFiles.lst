@@ -1,8 +1,0 @@
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/bpm/CisoAssignmentHandler.java
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/bpm/OwnerAssignmentHandler.java
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/ui/RecertificateMessages.java
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/bpm/ApplyChangesHandler.java
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/bpm/Messages.java
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/bpm/EndProcessHandler.java
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/bpm/CisoDecisionHandler.java
-/home/gbuades/soffid/addon-recertification/recertification-role/src/main/java/com/soffid/iam/recertification/bpm/ChangeTaskNameHandler.java
