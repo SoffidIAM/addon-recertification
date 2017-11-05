@@ -5,6 +5,7 @@
 //
 
 package com.soffid.iam.addons.recertification.model;
+import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
 @Entity (table="SCR_RECROL" )
@@ -17,6 +18,10 @@ public abstract class RecertifiedRoleEntity {
 	@Nullable
 	@Identifier
 	public java.lang.Long id;
+
+	@Column (name="RRO_TEN_ID")
+	@Nullable
+	TenantEntity tenant;
 
 	@Column (name="RRO_CHUSER")
 	@Nullable

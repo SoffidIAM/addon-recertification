@@ -4,16 +4,19 @@
 	<tag>${pom.version}</tag>
 	<roles>
 		<initiator>
+			<role name="auth:recertification:manage" />
 			<role name="SEU_ADMIN" />
 			<role name="SOFFID_ADMIN" />
 		</initiator>
 
 		<supervisor>
+			<role name="auth:recertification:manage" />
 			<role name="SEU_ADMIN" />
 			<role name="SOFFID_ADMIN" />
 		</supervisor>
 
 		<observer>
+			<role name="auth:recertification:manage" />
 			<role name="SEU_ADMIN" />
 			<role name="SOFFID_ADMIN" />
 		</observer>

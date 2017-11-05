@@ -6,8 +6,7 @@
 package com.soffid.iam.addons.recertification.model;
 
 import com.soffid.iam.addons.recertification.common.RecertifiedRoleDefinition;
-
-import es.caib.seycon.ng.model.RolEntity;
+import com.soffid.iam.model.RoleEntity;
 
 /**
  * DAO RecertifiedRoleDefinitionEntity implementation
@@ -20,7 +19,7 @@ public class RecertifiedRoleDefinitionEntityDaoImpl extends RecertifiedRoleDefin
 			RecertifiedRoleDefinitionEntity source,
 			RecertifiedRoleDefinition target) {
 		super.toRecertifiedRoleDefinition(source, target);
-		RolEntity re = getRolEntityDao().load(source.getRoleId());
+		RoleEntity re = getRoleEntityDao().load(source.getRoleId());
 		if (re == null)
 		{
 			target.setRoleName("#"+source.getRoleId());
@@ -29,9 +28,9 @@ public class RecertifiedRoleDefinitionEntityDaoImpl extends RecertifiedRoleDefin
 		}
 		else
 		{
-			target.setRoleName( re.getNom());
-			target.setDescription(re.getDescripcio());
-			target.setSystem(re.getBaseDeDades().getCodi());
+			target.setRoleName( re.getName());
+			target.setDescription(re.getDescription());
+			target.setSystem(re.getSystem().getName());
 		}
 	}
 }

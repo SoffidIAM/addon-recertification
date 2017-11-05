@@ -12,7 +12,10 @@ import org.jbpm.graph.exe.ProcessInstance;
 
 import com.soffid.iam.addons.recertification.Constants;
 import com.soffid.iam.addons.recertification.common.RecertificationProcess;
+import com.soffid.iam.addons.recertification.common.RecertificationType;
 import com.soffid.iam.addons.recertification.common.RecertifiedGroup;
+import com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem;
+import com.soffid.iam.addons.recertification.core.ejb.RecertificationService;
 import com.soffid.iam.addons.recertification.core.ejb.RecertificationServiceHome;
 
 /**
@@ -31,41 +34,67 @@ public class CreateRecertificationTaskHandler implements ActionHandler
 	public void execute (ExecutionContext executionContext) throws Exception
 	{
 		boolean usersToRecetify = false;	// Recertified users to check
-		RecertificationServiceHome home =
-				(RecertificationServiceHome) new InitialContext()
-						.lookup(RecertificationServiceHome.JNDI_NAME);
 		com.soffid.iam.addons.recertification.core.ejb.RecertificationService ejb =
-				home.create();
+				(RecertificationService) new InitialContext()
+					.lookup(RecertificationServiceHome.JNDI_NAME);
 
 		Long processId =
 				(Long) executionContext.getVariable(Constants.RECERTIFICATION_ID_VAR);
 
 		RecertificationProcess process = ejb.getRecertificationProcess(processId);
-		ejb.startGroupRecertificationProcess(process);
 
-		for (RecertifiedGroup rg : ejb.getRecertifiedGroups(process))
+		
+		if (process.getType().equals(RecertificationType.ENTITLEMENTS))
 		{
-			// Check recertified users to group
-			if (!ejb.getRecertifiedUsers(rg).isEmpty())
+			ejb.startGroupRecertificationProcess(process);
+			for (RecertifiedGroup rg : ejb.getRecertifiedGroups(process))
 			{
+				// Check recertified users to group
+				if (!ejb.getRecertifiedUsers(rg).isEmpty())
+				{
+					usersToRecetify = true;
+					
+					ProcessDefinition def = executionContext
+							.getJbpmContext()
+							.getGraphSession()
+							.findLatestProcessDefinition(Constants.groupProcessName);
+					ProcessInstance pi = def.createProcessInstance();
+					pi.getContextInstance().setVariable(
+							Constants.RECERTIFICATION_ID_VAR, processId);
+					pi.getContextInstance().setVariable(
+							Constants.RECERTIFICATION_GROUP_ID_VAR, rg.getId());
+					pi.getContextInstance().setVariable(Constants.BOSS_ROLE,
+							rg.getManagerRole());
+					executionContext.getJbpmContext().save(pi);
+					pi.fireStartEvent(def.getStartState());
+					pi.signal();
+					rg.setProcessId(pi.getId());
+					ejb.setRecertifiedGroupWorkflowId(rg, pi.getId());
+				}
+			}
+		} else {
+			ejb.startInformationSystemRecertificationProcess(process);
+			for (RecertifiedInformationSystem rg : ejb.getRecertifiedInformationSystems(process))
+			{
+				// Check recertified users to group
 				usersToRecetify = true;
 				
 				ProcessDefinition def = executionContext
 						.getJbpmContext()
 						.getGraphSession()
-						.findLatestProcessDefinition(Constants.groupProcessName);
+						.findLatestProcessDefinition(Constants.isProcessName );
 				ProcessInstance pi = def.createProcessInstance();
 				pi.getContextInstance().setVariable(
 						Constants.RECERTIFICATION_ID_VAR, processId);
 				pi.getContextInstance().setVariable(
-						Constants.RECERTIFICATION_GROUP_ID_VAR, rg.getId());
+						Constants.RECERTIFICATION_SYSTEM_ID_VAR, rg.getId());
 				pi.getContextInstance().setVariable(Constants.BOSS_ROLE,
-						rg.getManagerRole());
+						rg.getAppOwnerRole());
 				executionContext.getJbpmContext().save(pi);
 				pi.fireStartEvent(def.getStartState());
 				pi.signal();
 				rg.setProcessId(pi.getId());
-				ejb.setRecertifiedGroupWorkflowId(rg, pi.getId());
+				ejb.setRecertifiedInformationSystemWorkflowId(rg, pi.getId());
 			}
 		}
 		

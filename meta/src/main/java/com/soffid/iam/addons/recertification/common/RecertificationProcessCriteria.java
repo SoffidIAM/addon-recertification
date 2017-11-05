@@ -8,7 +8,7 @@ package com.soffid.iam.addons.recertification.common;
 import com.soffid.mda.annotation.*;
 
 @Criteria 
-public abstract class RecertificationProcessCriteria {
+public class RecertificationProcessCriteria {
 
 	@Nullable
 	public java.lang.String name;
@@ -28,9 +28,11 @@ public abstract class RecertificationProcessCriteria {
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 
 	@Nullable
+	@CriteriaColumn( parameter="groups.group.name", comparator="LIKE_COMPARATOR")
 	public java.lang.String group;
 
 	@Nullable
+	@CriteriaColumn( parameter="informationSystems.informationSystem.name", comparator="LIKE_COMPARATOR")
 	public java.lang.String informationSystem;
 
 }

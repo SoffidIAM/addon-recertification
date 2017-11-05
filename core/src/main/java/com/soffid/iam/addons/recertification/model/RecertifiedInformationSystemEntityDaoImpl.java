@@ -5,15 +5,12 @@
 
 package com.soffid.iam.addons.recertification.model;
 
-import it.sauronsoftware.cron4j.ProcessTask;
-
 import org.hibernate.HibernateException;
 
 import com.soffid.iam.addons.recertification.common.ProcessStatus;
 import com.soffid.iam.addons.recertification.common.RecertificationType;
 import com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem;
-
-import es.caib.seycon.ng.model.AplicacioEntity;
+import com.soffid.iam.model.InformationSystemEntity;
 
 /**
  * DAO RecertifiedInformationSystemEntity implementation
@@ -27,7 +24,7 @@ public class RecertifiedInformationSystemEntityDaoImpl extends RecertifiedInform
 			RecertifiedInformationSystem target) {
 		super.toRecertifiedInformationSystem(source, target);
 		// Information System
-		target.setInformationSystem( source.getInformationSystem().getCodi() );
+		target.setInformationSystem( source.getInformationSystem().getName() );
 		// Process ID
 		target.setProcessId(source.getProcess().getId());
 		// Calculate progress
@@ -68,9 +65,9 @@ public class RecertifiedInformationSystemEntityDaoImpl extends RecertifiedInform
 
 		super.recertifiedInformationSystemToEntity(source, target, copyIfNull);
 		
-		if (target.getInformationSystem( ) == null || ! target.getInformationSystem().getCodi().equals(source.getInformationSystem()))
+		if (target.getInformationSystem( ) == null || ! target.getInformationSystem().getName().equals(source.getInformationSystem()))
 		{
-			AplicacioEntity aplicacio = getAplicacioEntityDao().findByCodi(source.getInformationSystem());
+			InformationSystemEntity aplicacio = getInformationSystemEntityDao().findByCode(source.getInformationSystem());
 			if (aplicacio == null)
 				throw new HibernateException (String.format(Messages.getString("RecertifiedInformationSystemEntityDaoImpl.InvalidIS"), source.getInformationSystem())); //$NON-NLS-1$
 			target.setInformationSystem(aplicacio);

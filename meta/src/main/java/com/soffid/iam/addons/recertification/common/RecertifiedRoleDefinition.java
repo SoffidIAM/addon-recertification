@@ -9,7 +9,7 @@ import com.soffid.iam.addons.recertification.core.RecertificationService;
 import com.soffid.mda.annotation.*;
 
 @ValueObject 
-public abstract class RecertifiedRoleDefinition {
+public class RecertifiedRoleDefinition {
 
 	@Nullable
 	public java.lang.Long id;

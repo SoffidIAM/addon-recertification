@@ -18,7 +18,7 @@ public class RecertificateMessages implements Map<String, String> {
 				ResourceBundle.Control.getNoFallbackControl(
     					ResourceBundle.Control.FORMAT_PROPERTIES));
 	}
-	
+
 	public int size() {
 		return Integer.MAX_VALUE;
 	}

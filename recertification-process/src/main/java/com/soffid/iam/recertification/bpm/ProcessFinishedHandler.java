@@ -16,7 +16,7 @@ import es.caib.seycon.ng.utils.Security;
 public class ProcessFinishedHandler implements ActionHandler {
 
 	public void execute(ExecutionContext executionContext) throws Exception {
-		Security.nestedLogin(Security.getCurrentUser(), new String []{ "recertification:manage"} );
+		Security.nestedLogin("anonymuos", new String []{ "recertification:manage"} );
 		try {
 			
 		} finally {

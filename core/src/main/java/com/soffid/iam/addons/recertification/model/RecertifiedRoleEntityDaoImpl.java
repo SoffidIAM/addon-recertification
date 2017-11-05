@@ -6,9 +6,9 @@
 package com.soffid.iam.addons.recertification.model;
 
 import com.soffid.iam.addons.recertification.common.RecertifiedRole;
+import com.soffid.iam.api.RoleAccount;
+import com.soffid.iam.model.RoleAccountEntity;
 
-import es.caib.seycon.ng.comu.RolAccount;
-import es.caib.seycon.ng.model.RolAccountEntity;
 
 /**
  * DAO RecertifiedRoleEntity implementation
@@ -22,11 +22,11 @@ public class RecertifiedRoleEntityDaoImpl extends RecertifiedRoleEntityDaoBase
 		super.toRecertifiedRole(source, target);
 		// Incompatible types source.rol and target.rol
 		// Missing attribute processId on entity
-		RolAccountEntity rae = getRolAccountEntityDao().load(source.getRolAccountId());
+		RoleAccountEntity rae = getRoleAccountEntityDao().load(source.getRolAccountId());
 		if (rae != null)
 		{
-			RolAccount rolAccount = getRolAccountEntityDao().toRolAccount(rae);
-			target.setRol(rolAccount);
+			RoleAccount roleAccount = getRoleAccountEntityDao().toRoleAccount(rae);
+			target.setRol(roleAccount);
 		}
 		target.setRecertifiedUserId(source.getUser().getId());
 	}

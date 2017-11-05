@@ -1,0 +1,89 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<task id="recwindow" onSave="model.commit()" onPrepareTransition="prepareTransition ()" >
+		
+		<datamodel id="model" rootNode="root" src="bpm/cisoDescriptor.xml" />
+		
+		<zscript>
+			<![CDATA[
+				Long id = (Long) recwindow.getTask().getVariables().get(com.soffid.iam.addons
+						.recertification.Constants.RECERTIFICATION_SYSTEM_ID_VAR);
+				
+				model.getJXPathContext().getVariables()
+					.declareVariable("recertifiedSystemId", id);
+
+				com.soffid.iam.recertification.ui.RecertificateMessages msg = new com.soffid.iam.recertification.ui.RecertificateMessages();
+				
+				
+				void openRole (Component c)
+				{
+					Long id = es.caib.zkib.datasource.XPathUtils.getValue(c, "/role[1]/@id");
+              		Executions.getCurrent().sendRedirect(
+                  			"/finestres/aplica_rolinfo.zul?id="+id,
+                  			"soffid_popup");
+				}
+
+				void prepareTransition ()
+				{
+					model.commit();
+					for ( Iterator it = model.getJXPathContext().iterate("system/recertifiedRole");
+							it.hasNext();)
+					{
+						es.caib.zkib.datamodel.DataNode dn = it.next();
+						com.soffid.iam.addons.recertification.common.RecertifiedRoleDefinition def = dn.getInstance();
+						if (! def.isCheckedByCiso())
+						{
+							throw new es.caib.bpm.toolkit.exception.UserWorkflowException("Role "+def.getRoleName()+" is not yet checked");
+						}
+					}
+				}
+			]]>
+		</zscript>
+		
+		<hbox>
+			<label value="${msg['APP']}"></label>
+			<label bind="/recwindow/model:/system/@informationSystem"/>
+		</hbox>
+
+		<grid dataPath="/recwindow/model:/system/recertifiedRole"  id="gridRols" >
+			<columns>
+				<column label="${msg['Role']}"/>
+				<column label="${msg['Description']}"/>
+				<column label="${msg['Reviewed']}"/>
+				<column label="${msg['OwnedRoles']}"/>
+			</columns>
+			
+			<datarow>
+				<div>
+					<label bind="role[1]/@nom"/>
+					<imageclic src="/img/link.png" onClick="openRole(self)" style="margin-left: 1em">
+					</imageclic>
+				</div>
+				<label bind="role[1]/@descripcio"/>
+				<checkbox bind="@checkedByCiso"/>
+				<grid dataPath="role[1]/ownedRoles" sclass="noBorderGrid" mold="paging" pageSize="8">
+					<attribute name="onNewRow"><![CDATA[
+					Row r = event.getData();
+					Long rolId = es.caib.zkib.datasource.XPathUtils.getValue(r, "idRol");
+					es.caib.seycon.ng.comu.Rol rol = es.caib.seycon.ng.EJBLocator.getAplicacioService().findRolById(rolId);
+					if (rol != null)
+						r.getLastChild().setValue(rol.getDescripcio());
+
+					]]></attribute>
+					<datarow>
+						<label bind="@rolName"/>
+						<label bind="@domainValue"></label>
+						<label id="desc"/>
+					</datarow>
+				</grid>
+			</datarow>
+		</grid>
+
+	</task>
+	
+</zk>
