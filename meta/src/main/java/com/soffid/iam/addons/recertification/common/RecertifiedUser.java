@@ -8,7 +8,7 @@ package com.soffid.iam.addons.recertification.common;
 import com.soffid.mda.annotation.*;
 
 @ValueObject 
-public abstract class RecertifiedUser {
+public class RecertifiedUser {
 
 	@Nullable
 	public java.lang.Long id;

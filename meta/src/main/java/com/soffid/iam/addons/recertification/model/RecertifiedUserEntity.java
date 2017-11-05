@@ -5,6 +5,7 @@
 //
 
 package com.soffid.iam.addons.recertification.model;
+import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
 @Entity (table="SCR_RECUSR" )
@@ -19,6 +20,11 @@ public abstract class RecertifiedUserEntity {
 	@Identifier
 	public java.lang.Long id;
 
+	@Column (name="RUS_TEN_ID")
+	@Nullable
+	TenantEntity tenant;
+
+	
 	@Column (name="RUS_ACTACC")
 	public java.lang.Boolean activeAccount;
 

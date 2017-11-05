@@ -12,7 +12,7 @@
 
 		<finder name="process" type="process">
 			<ejb-finder
-				jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="findRecertificationProcesses" if="${queryEnabled}">
 				<parameter value="${self.query[0].instance}" />
 			</ejb-finder>
@@ -37,7 +37,7 @@
 	<datanode name="process">
 		<finder name="group" type="group">
 			<ejb-finder
-				jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="getRecertifiedGroups">
 				<parameter value="${instance}" />
 			</ejb-finder>
@@ -45,7 +45,7 @@
 		
 		<finder name="is" type="is">
 			<ejb-finder
-				jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="getRecertifiedInformationSystems">
 				<parameter value="${instance}" />
 			</ejb-finder>
@@ -73,7 +73,7 @@
 	<datanode name="group">
 		<finder name="users" type="users">
 			<ejb-finder
-				jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="getRecertifiedUsers">
 				<parameter value="${instance}" />
 			</ejb-finder>
@@ -122,7 +122,7 @@
 	<datanode name="is">
 		<finder name="roles" type="roles">
 			<ejb-finder
-				jndi="soffid/ejb/com.soffid.iam.addons.recertification.core.RecertificationService"
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="getRecertifiedRoles">
 				<parameter value="${instance}" />
 			</ejb-finder>

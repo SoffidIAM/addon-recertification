@@ -19,7 +19,7 @@ public class RecertifiedUserEntityDaoImpl extends RecertifiedUserEntityDaoBase
 		super.toRecertifiedUser(source, target);
 		// Incompatible types source.user and target.user
 		// Missing attribute recertifiedGroupId on entity
-		target.setUser(source.getUser().getCodi());
+		target.setUser(source.getUser().getUserName());
 		target.setRecertifiedGroupId(source.getGroup().getId());
 	}
 	

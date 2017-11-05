@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zkib-model>
+	<datanode name="root">
+		<finder name="group" type="group">
+			<ejb-finder jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				if="${query}"
+				method="getRecertifiedGroup">
+				<parameter value="${recertifiedGroupId}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="group">
+		<finder name="recertifiedUser" type="recertifiedUser">
+			<ejb-finder jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedUsers">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="recertifiedUser">
+		<finder name="user" type="user">
+			<ejb-finder jndi="java:comp/env/ejb/UsuariEJB"
+				method="findUsuariByCodiUsuari">
+				<parameter value="${instance.user}" />
+			</ejb-finder>
+		</finder>
+		<finder name="recertifiedRole" type="recertifiedRole">
+			<ejb-finder jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedRoles">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+
+	<datanode name="recertifiedRole">
+		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
+			<update-method method="checkByCiso">
+				<parameter value="${instance}" />
+				<parameter value="${instance.checkedByCiso}" />
+			</update-method>
+		</ejb-handler>
+	</datanode>
+	
+	<datanode name="role" transient="true">
+	</datanode>
+
+	<datanode name="user" transient="true">
+	</datanode>
+
+</zkib-model>

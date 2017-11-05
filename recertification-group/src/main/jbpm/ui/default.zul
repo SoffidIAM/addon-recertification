@@ -5,59 +5,54 @@
 	xsi:schemaLocation="http://www.zkoss.org/2005/zul
 		http://www.zkoss.org/2005/zul/zul.xsd">
 
-	<task id="window">
-		<attribute name="onLoad()">
+	<task id="recwindow" >
+		
+		<datamodel id="model" rootNode="root" src="bpm/cisoDescriptor.xml" />
+		
+		<zscript>
 			<![CDATA[
-				Long id = window.getProcessInstance().getVariables().get(com.soffid.iam.addons
+				Long id = (Long) recwindow.getProcessInstance().getVariables().get(com.soffid.iam.addons
 						.recertification.Constants.RECERTIFICATION_GROUP_ID_VAR);
 				
-				model.getJXPathContext().getVariables().declareVariable("recertifiedGroupId", id);
-				model.getJXPathContext().getVariables().declareVariable("query", true);
-				model.refresh();				
+				model.getJXPathContext().getVariables()
+					.declareVariable("recertifiedGroupId", id);
+
+				com.soffid.iam.recertification.ui.RecertificateMessages msg = new com.soffid.iam.recertification.ui.RecertificateMessages();
+				
+				
 			]]>
-		</attribute>
-
+		</zscript>
 		
-		<datamodel id="model" rootNode="root" src="bpm/descriptorStaff.xml" />
-
-		<zscript>
-				model.getJXPathContext().getVariables().declareVariable("query", false);
-		</zscript>	
-		
-		<zscript>
-    	<![CDATA[
-       		com.soffid.iam.recertification.ui.RecertificateMessages msg = new com.soffid.iam.recertification.ui.RecertificateMessages();
-        ]]>
-        </zscript>	
 		<hbox>
-			<label value="${msg['recertification.group.RecertificationDescription']}"></label>
-			<label bind="/window/model:/group/@group"></label>
+			<label value="${msg['BU']}"></label>
+			<label bind="/recwindow/model:/group/@group"/>
 		</hbox>
 
-		<grid dataPath="/window/model:/group/user">
+		<grid dataPath="/recwindow/model:/group/recertifiedUser"  id="gridRols">
 			<columns>
-				<column label="${msg['recertification.group.User']}"/>
-				<column label="${msg['recertification.group.FirstName']}"/>
-				<column label="${msg['recertification.group.LastName']}"/>
-				<column label="${msg['recertification.group.ActiveUser']}"/>
+				<column label="${msg['User']}"/>
+				<column label="${msg['Name']}"/>
+				<column label="${msg['BossReview'] }/${msg['OwnerReview'] }/${msg['CisoReview'] } ${msg['OwnedRoles']}"/>
 			</columns>
 			
 			<datarow>
-				<label id="lblUserName" bind="@user"/>
-				<label bind="/usuari[1]/@nom"/>
-				<label bind="/usuari[1]/@primerLlinatge"/>
-				<checkbox id="checkActive" bind="@activeAccount" />
+				<label bind="user[1]/@codi"/>
+				<label bind="user[1]/@fullName"/>
+				<div>
+					<grid dataPath="recertifiedRole" sclass="noBorderGrid" mold="paging" pageSize="8" >
+						<datarow>
+							<checkbox bind="@checkedByBoss" disabled="true"/>
+							<checkbox bind="@checkedByAppOwner" disabled="true"/>
+							<checkbox bind="@checkedByCiso" disabled="true"/>
+							<label bind="rol[1]/@roleName"/>
+							<label bind="rol[1]/domainValue/@value"></label>
+							<label bind="rol[1]/@roleDescription"/>
+						</datarow>
+					</grid>
+				</div>
 			</datarow>
 		</grid>
 
-		<hbox width="100%">
-			<label value="${msg['recertification.group.IS']}"></label>
-			<listbox mold="paging" rows="5" dataPath="/window/model:/group[1]/process[1]/app" width="50em">
-				<dataitem>
-					<listcell bind="@informationSystem"/>
-				</dataitem>
-			</listbox>
-		</hbox>
-
 	</task>
+	
 </zk>

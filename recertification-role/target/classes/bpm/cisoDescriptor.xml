@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zkib-model>
+	<datanode name="root">
+		<finder name="system" type="system">
+			<ejb-finder jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				if="${query}"
+				method="getRecertifiedInformationSystem">
+				<parameter value="${recertifiedSystemId}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="system">
+		<finder name="recertifiedRole" type="recertifiedRole">
+			<ejb-finder jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedRoles">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="recertifiedRole">
+		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
+			<update-method method="checkByCiso">
+				<parameter value="${instance}" />
+				<parameter value="${instance.checkedByCiso}" />
+			</update-method>
+		</ejb-handler>
+		<finder name="role" type="role">
+			<ejb-finder jndi="java:comp/env/ejb/AplicacioEJB" method="findRolById">
+				<parameter value="${instance.roleId}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="role" transient="true">
+	</datanode>
+
+</zkib-model>

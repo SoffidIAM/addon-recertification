@@ -11,38 +11,75 @@
 		<description>
 			Starts a recertification group process
 		</description>
-		<transition to="Review staff list"></transition>
+		<transition to="BU manager review"></transition>
 	</start-state>
 
 
-	<task-node name="Review staff list">
+	<task-node name="BU manager review">
 		<description>
-			Boss can remove any user from the list. Their users will be disabled.
+			Group manager reviews user permissions
 		</description>
-		<task name="Review authorized users list">
-			<assignment class="com.soffid.iam.recertification.bpm.TaskAssignmentHandler"></assignment>
+		<task name="BU manager review">
+			<assignment class="com.soffid.iam.recertification.bpm.BossAssignmentHandler"></assignment>
 		</task>
-		<transition to="Cancelled" name="Cancel"></transition>
-		<transition to="Create recertification task" name="Create recertification task"></transition>
+		<event type="task-create">
+			<action class="com.soffid.iam.recertification.bpm.ChangeTaskNameHandler" name="Change task name"></action>
+		</event>
+		<event type="node-enter">
+			<action name="Calculate user recertifications" class="com.soffid.iam.recertification.bpm.StartGroupRecertificationHandler"></action>
+		</event>
+		<transition to="Request app owner permissions" name="Bring forward"></transition>
 	</task-node>
 
-	<node name="Create recertification task">
-		<action name="Create recertification info" class="com.soffid.iam.recertification.bpm.CreateRecertificationTaskHandler"></action>
-		<transition to="Waiting for group certification"></transition>
+	<node name="Apply changes">
+		<action name="Apply changes" class="com.soffid.iam.recertification.bpm.ApplyChangesHandler"></action>
+		<event type="task-create">
+			<action name="Create recertification info" class="com.soffid.iam.recertification.bpm.CreateRecertificationInfoHandler"></action>
+		</event>
+		<transition to="End"></transition>
 	</node>
 
-	<state name="Waiting for group certification">
-		<transition to="Cancelled" name="Cancel"></transition>
-		<transition to="End" name="End"></transition>
-	</state>
+	<task-node name="CISO review">
+		<task name="Ciso review">
+			<assignment class="com.soffid.iam.recertification.bpm.CisoAssignmentHandler"></assignment>
+		</task>
+		<event type="task-create">
+			<action name="Change task name" class="com.soffid.iam.recertification.bpm.ChangeTaskNameHandler"></action>
+		</event>
+		<transition to="Apply changes" name="Approve"></transition>
+	</task-node>
 
+	<decision name="Has CISO review ?" async="true">
+		<handler class="com.soffid.iam.recertification.bpm.CisoDecisionHandler"></handler>
+		<transition to="CISO review" name="yes"></transition>
+		<transition to="Apply changes" name="no"></transition>
+	</decision>
 
-	<end-state name="Cancelled"></end-state>
+	<task-node name="App owner review">
+		<task name="App owner review">
+			<assignment class="com.soffid.iam.recertification.bpm.OwnerAssignmentHandler"></assignment>
+		</task>
+		<event type="task-create">
+			<action name="Change task name" class="com.soffid.iam.recertification.bpm.ChangeTaskNameHandler"></action>
+		</event>
+		<transition to="join1" name="Approve"></transition>
+	</task-node>
+
+	<node name="Request app owner permissions">
+		<action name="Create app owner tasks" class="com.soffid.iam.recertification.bpm.AppOwnerTokenHandler"></action>
+		<transition to="Has CISO review ?" name="No further review needed"></transition>
+		<transition to="App owner review" name="App owner review"></transition>
+	</node>
+
+	<join name="join1" async="true">
+		<transition to="Has CISO review ?"></transition>
+	</join>
+
 
 	<end-state name="End"></end-state>
 
 
 	<event type="process-end">
-		<action name="User recertification finished" class="com.soffid.iam.recertification.bpm.EndGroupRecertificationHandler"></action>
+		<action name="end handler" class="com.soffid.iam.recertification.bpm.EndProcessHandler" async="true"></action>
 	</event>
 </process-definition>

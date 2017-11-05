@@ -1,0 +1,155 @@
+<zk xmlns="http://www.zkoss.org/2005/zul"
+	xmlns:h="http://www.w3.org/1999/xhtml"
+	xmlns:zk="http://www.zkoss.org/2005/zk"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.zkoss.org/2005/zul
+		http://www.zkoss.org/2005/zul/zul.xsd">
+
+	<task id="recwindow" onSave="model.commit()" onPrepareTransition="prepareTransition ()" >
+		
+		<datamodel id="model" rootNode="root" src="bpm/ownerDescriptor.xml" />
+		
+		<zscript>
+			<![CDATA[
+				Long groupId = (Long) recwindow.getTask().getVariables().get(com.soffid.iam.addons
+						.recertification.Constants.RECERTIFICATION_GROUP_ID_VAR);
+				
+				model.getJXPathContext().getVariables()
+					.declareVariable("recertifiedGroupId", groupId);
+
+				Long systemId = (Long) recwindow.getTask().getVariables().get(com.soffid.iam.addons
+						.recertification.Constants.RECERTIFICATION_SYSTEM_ID_VAR);
+				
+				model.getJXPathContext().getVariables()
+					.declareVariable("recertifiedSystemId", systemId);
+
+				com.soffid.iam.recertification.ui.RecertificateMessages msg = new com.soffid.iam.recertification.ui.RecertificateMessages();
+				
+				
+				void prepareTransition ()
+				{
+					model.commit();
+					for ( Iterator it = model.getJXPathContext().iterate("group/recertifiedUser");
+							it.hasNext();)
+					{
+						es.caib.zkib.datamodel.DataNode dn = it.next();
+						com.soffid.iam.addons.recertification.common.RecertifiedUser def = dn.getInstance();
+						if (def.getAppOwnerReview() == null)
+						{
+							throw new es.caib.bpm.toolkit.exception.UserWorkflowException("User "+def.getUser()+" is not yet reviewed");
+						}
+					}
+					String messages = "";
+					for (Iterator itUser = model.getJXPathContext().iteratePointers("/group/recertifiedUser");
+							itUser.hasNext(); )
+					{
+						int roles = 0;
+						es.caib.zkib.jxpath.Pointer p = itUser.next();
+						for (Iterator itRole = model.getJXPathContext().iteratePointers(p.asPath()+"/recertifiedRole");
+								itRole.hasNext();)
+						{
+							es.caib.zkib.jxpath.Pointer p2 = itRole.next();
+							Boolean check = model.getJXPathContext().getValue(p2.asPath()+"/@checkedByAppOwner");
+							if (check == null || ! check.booleanValue())
+							{
+								roles ++;
+							}
+						}
+						if (roles > 0)
+						{
+							if (messages.length() > 0)
+								messages = messages + ", ";
+							messages = messages + model.getJXPathContext().getValue(p.asPath()+ "/user[1]/fullName");
+							if (roles > 1)
+								messages = messages + " (" + roles + ")";
+						}
+					}
+					if (messages.length() > 0 )
+					{
+						int result = Messagebox.show("Roles assigned to "+
+							messages+ ". Are going to be removed. Please confirm.",
+								"Warning",
+								Messagebox.OK+Messagebox.CANCEL, Messagebox.EXCLAMATION);
+						if (result != Messagebox.OK)
+							throw new es.caib.bpm.toolkit.exception.UserWorkflowException("Action cancelled");
+					}
+				}
+				
+				void endUserReview ()
+				{
+					model.commit();
+					
+					com.soffid.iam.addons.recertification.common.RecertifiedUser ru = 
+							es.caib.zkib.datasource.XPathUtils.getValue(self, ".").getInstance();
+					com.soffid.iam.addons.recertification.core.ejb.RecertificationService svc =
+							new javax.naming.InitialContext ()
+								.lookup (com.soffid.iam.addons.recertification.core.ejb.RecertificationServiceHome.JNDI_NAME);
+					ru.setAppOwnerReview(java.util.Calendar.getInstance());
+					svc.update (ru);
+					Div d = self.getParent();
+					d.getChildren().get(0).setVisible(false);
+					d.getChildren().get(1).setVisible(false);
+					d.getChildren().get(2).setVisible(true);
+				}
+				
+				void openUserReview ()
+				{
+					Div d = self.getParent();
+					d.getChildren().get(0).setVisible(true);
+					d.getChildren().get(1).setVisible(true);
+					d.getChildren().get(2).setVisible(false);
+				}
+
+				void newUserRow (Row r)
+				{
+					if (es.caib.zkib.datasource.XPathUtils.getValue(r, "@appOwnerReview") != null)
+					{
+						r.getChildren().get(2).getChildren().get(0).setVisible(false);
+						r.getChildren().get(2).getChildren().get(1).setVisible(false);
+						r.getChildren().get(2).getChildren().get(2).setVisible(true);
+					}
+				}
+			]]>
+		</zscript>
+		
+		<hbox>
+			<label value="${msg['BU']}"></label>
+			<label bind="/recwindow/model:/group/@group"/>
+		</hbox>
+
+		<grid dataPath="/recwindow/model:/group/recertifiedUser"  id="gridRols" onNewRow="newUserRow(event.data)">
+			<columns>
+				<column label="${msg['User']}"/>
+				<column label="${msg['Name']}"/>
+				<column label="${msg['BossReview'] }/${msg['OwnerReview'] } ${msg['OwnedRoles']}"/>
+			</columns>
+			
+			<datarow>
+				<label bind="user[1]/@codi"/>
+				<label bind="user[1]/@fullName"/>
+				<div>
+					<grid dataPath="recertifiedRole" sclass="noBorderGrid" mold="paging" pageSize="8" >
+						<columns>
+							<column width="2em"/>
+							<column width="2em"/>
+							<column />
+							<column />
+							<column />
+						</columns>
+						<datarow>
+							<checkbox bind="@checkedByBoss" disabled="true"/>
+							<checkbox bind="@checkedByAppOwner"/>
+							<label bind="rol[1]/@roleName"/>
+							<label bind="rol[1]/domainValue/@value"></label>
+							<label bind="rol[1]/@roleDescription"/>
+						</datarow>
+					</grid>
+					<button label="Done" onClick="endUserReview()"/>
+					<button visible="false" label="Open" onClick="openUserReview()"/>
+				</div>
+			</datarow>
+		</grid>
+
+	</task>
+	
+</zk>

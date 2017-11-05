@@ -5,6 +5,7 @@
 //
 
 package com.soffid.iam.addons.recertification.model;
+import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
 @Entity (table="SCR_RECGRO" )
@@ -18,6 +19,10 @@ public abstract class RecertifiedGroupEntity {
 	@Nullable
 	@Identifier
 	public java.lang.Long id;
+
+	@Column (name="RGR_TEN_ID")
+	@Nullable
+	TenantEntity tenant;
 
 	@Column (name="RGR_STATUS")
 	@Nullable

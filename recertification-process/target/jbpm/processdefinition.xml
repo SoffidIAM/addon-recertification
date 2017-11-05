@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<process-definition xmlns="urn:jbpm.org:jpdl-3.3"
+	name="Recertification process">
+	<description>
+		Process to execute recertification tasks.
+	</description>
+
+
+	<start-state name="Start">
+		<description>
+			Starts a recertification process
+		</description>
+		<transition to="Select groups"></transition>
+		<event type="before-signal">
+			<action name="Create recertification process" class="com.soffid.iam.recertification.bpm.CreateRecertificationProcessHandler"></action>
+		</event>
+	</start-state>
+
+
+	<task-node name="Select groups">
+		<description>
+			Selects one or more business units.
+
+			For each group, the system will show who the boss is (Role SOFFID_BOSS
+			on this unit). If needed, the CSO can change the boss for any
+			business unit.
+		</description>
+		<task name="Select business units">
+			<assignment pooled-actors="SEU_ADMIN, SEU_ADMINISTRADOR, SOFFID_ADMIN"></assignment>
+		</task>
+		<transition to="Cancelled" name="Cancel"></transition>
+		<transition to="Create recertification task" name="Recertificate"></transition>
+	</task-node>
+
+	<node name="Create recertification task">
+		<action name="Create recertification info" class="com.soffid.iam.recertification.bpm.CreateRecertificationTaskHandler"></action>
+		<transition to="Waiting for group certification"></transition>
+	</node>
+
+	<state name="Waiting for group certification" async="true">
+		<transition to="Cancelled" name="Cancel"></transition>
+		<transition to="End" name="End"></transition>
+	</state>
+
+
+	<end-state name="Cancelled"></end-state>
+
+	<end-state name="End"></end-state>
+
+
+	<event type="process-end">
+		<action class="com.soffid.iam.recertification.bpm.ProcessFinishedHandler"></action>
+	</event>
+</process-definition>

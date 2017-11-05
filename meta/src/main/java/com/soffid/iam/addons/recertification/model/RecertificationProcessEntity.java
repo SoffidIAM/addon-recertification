@@ -5,6 +5,7 @@
 //
 
 package com.soffid.iam.addons.recertification.model;
+import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
 @Entity (table="SCR_RECPROC" )
@@ -12,6 +13,9 @@ import com.soffid.mda.annotation.*;
 	com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemEntity.class,
 	com.soffid.iam.addons.recertification.model.RecertifiedGroupEntity.class})
 public abstract class RecertificationProcessEntity {
+	@Column (name="RPR_TEN_ID")
+	@Nullable
+	TenantEntity tenant;
 
 	@Column (name="RPR_NAME")
 	public java.lang.String name;

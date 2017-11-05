@@ -51,7 +51,7 @@ public class RecertifiedGroupEntityDaoImpl extends RecertifiedGroupEntityDaoBase
 				target.setPctDone((int) (100 * done / total));
 		}
 		target.setProcessId(source.getProcess().getId());
-		target.setGroup(source.getGroup().getCodi());
+		target.setGroup(source.getGroup().getName());
 	}
 	
 	@Override
@@ -74,6 +74,6 @@ public class RecertifiedGroupEntityDaoImpl extends RecertifiedGroupEntityDaoBase
 		if (source.getGroup() == null)
 			target.setGroup(null);
 		else
-			target.setGroup (getGrupEntityDao().findByCodi(source.getGroup()));
+			target.setGroup (getGroupEntityDao().findByName(source.getGroup()));
 	}
 }
