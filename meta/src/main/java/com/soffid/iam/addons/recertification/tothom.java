@@ -7,6 +7,6 @@
 package com.soffid.iam.addons.recertification;
 import com.soffid.mda.annotation.*;
 
-@Role (name="tothom" )
+@Role (name="*" )
 public abstract class tothom {
 }
