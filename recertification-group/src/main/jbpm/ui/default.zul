@@ -38,8 +38,8 @@
 			<datarow>
 				<label bind="user[1]/@codi"/>
 				<label bind="user[1]/@fullName"/>
-				<div>
-					<grid dataPath="recertifiedRole" sclass="noBorderGrid" mold="paging" pageSize="8" >
+				<div style="border-bottom: solid 1px gray">
+					<grid dataPath="recertifiedRole" sclass="noBorderGrid">
 						<datarow>
 							<checkbox bind="@checkedByBoss" disabled="true"/>
 							<checkbox bind="@checkedByAppOwner" disabled="true"/>

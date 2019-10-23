@@ -121,8 +121,8 @@
 			<datarow>
 				<label bind="user[1]/@codi"/>
 				<label bind="user[1]/@fullName"/>
-				<div>
-					<grid dataPath="recertifiedRole" sclass="noBorderGrid" mold="paging" pageSize="8" >
+				<div style="border-bottom: solid 1px gray">
+					<grid dataPath="recertifiedRole" sclass="noBorderGrid" >
 						<attribute name="onNewRow"><![CDATA[
 						Row r = event.getData();
 /*						Long rolId = es.caib.zkib.datasource.XPathUtils.getValue(r, "roleId");

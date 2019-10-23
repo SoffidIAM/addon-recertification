@@ -104,7 +104,6 @@ public class AppOwnerTokenHandler implements ActionHandler
 						affectedSystemIds.add(ris.getId());
 					}
 				}
-				ru.setAppOwnerReview(Calendar.getInstance());
 				ejb.update(ru);
 			}
 	
