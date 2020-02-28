@@ -22,6 +22,8 @@ import com.soffid.iam.addons.recertification.common.RecertificationType;
 import com.soffid.iam.addons.recertification.core.ejb.RecertificationService;
 import com.soffid.iam.addons.recertification.core.ejb.RecertificationServiceHome;
 
+import es.caib.seycon.ng.exception.InternalErrorException;
+
 /**
  * @author (C) Soffid 2013
  * 
@@ -62,6 +64,9 @@ public class CreateRecertificationProcessHandler implements ActionHandler
 			newRecertProcess.setTemplate(t.getName());
 			break;
 		}
+		
+		if (newRecertProcess.getTemplate() == null)
+			throw new InternalErrorException("No recertification templates defined. Please, create a new template");
 
 		newRecertProcess = ejb.create(newRecertProcess);
 		
