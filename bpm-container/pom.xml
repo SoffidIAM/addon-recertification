@@ -39,17 +39,5 @@
 			<version>${pom.version}</version>
 			<type>par</type>
 		</dependency>
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>recertification-role-process-wf</artifactId>
-			<version>${pom.version}</version>
-			<type>par</type>
-		</dependency>
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>recertification-group-process-wf</artifactId>
-			<version>${pom.version}</version>
-			<type>par</type>
-		</dependency>
 	</dependencies>
 </project>
