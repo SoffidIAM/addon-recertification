@@ -22,6 +22,7 @@ public class RecertifiedGroup {
 
 	public java.lang.Long processId;
 
+	@Nullable
 	public java.lang.String managerRole;
 
 	@Nullable

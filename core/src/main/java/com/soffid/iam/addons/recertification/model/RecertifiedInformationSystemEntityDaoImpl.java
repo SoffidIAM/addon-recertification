@@ -36,6 +36,36 @@ public class RecertifiedInformationSystemEntityDaoImpl extends RecertifiedInform
 			target.setPctDone(0);
 		else if (source.getStatus() != ProcessStatus.ACTIVE)
 			target.setPctDone(100);
+		else if (source.getProcess().getType().equals(RecertificationType.ACCOUNTS))
+		{
+			for (RecertifiedRoleEntity role: source.getGrants())
+			{
+				if (role.getStep1Users() != null)
+				{
+					total ++;
+					if (role.getCheck1() != null) done++;
+				}
+				if (role.getStep2Users() != null)
+				{
+					total ++;
+					if (role.getCheck2() != null) done++;
+				}
+				if (role.getStep3Users() != null)
+				{
+					total ++;
+					if (role.getCheck3() != null) done++;
+				}
+				if (role.getStep4Users() != null)
+				{
+					total ++;
+					if (role.getCheck4() != null) done++;
+				}
+			}
+			if (total == 0)
+				target.setPctDone(100);
+			else
+				target.setPctDone((int) (100 * done / total));			
+		}
 		else 
 		{
 			for (RecertifiedRoleDefinitionEntity role: source.getRoles())

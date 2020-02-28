@@ -11,11 +11,15 @@
 		
 		<datamodel id="model" rootNode="root" src="bpm/descriptorBU.xml" />
 		
+		<style>
+			div.blockgroups {width: 49%; vertical-align: top; display:inline-block; margin-top: 3em}
+		</style>
 		<zscript>
 			<![CDATA[
 				com.soffid.iam.recertification.ui.RecertificateMessages msg = new com.soffid.iam.recertification.ui.RecertificateMessages();
 				
 				Long id = null;
+				
 				
 				void doLoad () {
 					id = window.getTask().getVariables().get(com.soffid.iam.addons
@@ -24,25 +28,43 @@
 					model.getJXPathContext().getVariables().declareVariable("processId", id);
 					model.refresh ();
 					onChangeRecertificationType();
-   				    cisoRoleTextbox.setDisabled( ! cisoReviewCheckbox.isChecked()); 
 				}
 				
 				void onChangeRecertificationType()
 				{
-					com.soffid.iam.addons.recertification.common.RecertificationType type = model.getValue("/process[1]/@type");
-					System.out.println("Type = "+type);
-					if (type == null)
-					{
-						type = com.soffid.iam.addons.recertification.common.RecertificationType.ENTITLEMENTS;
-						model.setValue("/process[1]/@type", type);
-					}
-					if (type.equals(com.soffid.iam.addons.recertification.common.RecertificationType.ENTITLEMENTS))
-					{
-						gridGroups.setVisible(true);						
-					}
-					else
-					{
-						gridGroups.setVisible(false);
+					String template = model.getValue("/process[1]/template");
+					model.getVariables().declareVariable("template", template);
+					try {
+//						com.soffid.iam.addons.recertification.common.RecertificationType type = model.getValue("/template[@name=$template]/@type");
+						com.soffid.iam.addons.recertification.common.RecertificationType type = null;
+						es.caib.zkib.jxpath.JXPathContext ctx = model.getJXPathContext();
+						for (Iterator iterator = ctx.iterate("/template"); iterator.hasNext();)
+						{
+							com.soffid.iam.addons.recertification.common.RecertificationTemplate t = iterator.next().getInstance();
+							System.out.println(t);
+							if (t.getName().equals (template))
+								type = t.getType();
+						}
+						System.out.println("Type = "+type);
+						if (type == null)
+						{
+							type = com.soffid.iam.addons.recertification.common.RecertificationType.ENTITLEMENTS;
+							model.setValue("/process[1]/@type", type);
+						}
+						if (type.equals(com.soffid.iam.addons.recertification.common.RecertificationType.ENTITLEMENTS))
+						{
+							gridGroups.setVisible(true);
+						}
+						else if (type.equals(com.soffid.iam.addons.recertification.common.RecertificationType.ACCOUNTS))
+						{
+							gridGroups.setVisible(false);						
+						}
+						else
+						{
+							gridGroups.setVisible(false);
+						}
+					} catch (Exception e) {
+						
 					}
 					
 				}
@@ -167,130 +189,115 @@
 		</zscript>
 
 		<div>
-			<zscript>
-			<![CDATA[
-			    typeENTITLEMENTS = com.soffid.iam.addons.recertification.common.RecertificationType.ENTITLEMENTS;
-			    typeROLEDEFINITIONS = com.soffid.iam.addons.recertification.common.RecertificationType.ROLEDEFINITIONS;
-			]]>
-			</zscript>
 			<label value="${msg['reviewType']}" style="display: inline-block; width:15em"/>
-			<listbox mold="select" bind="/window/model:/process[1]/@type" onSelect="onChangeRecertificationType()">
-				<listitem value="${typeENTITLEMENTS}" label="Entitlements" />
-				<listitem value="${typeROLEDEFINITIONS}" label="Role definitions"/>
+			<listbox mold="select" bind="/window/model:/process[1]/@template" dataPath="/window/model:/template" onSelect="onChangeRecertificationType()">
+				<dataitem bind="@name">
+					<listcell bind="@name"/>
+				</dataitem>
 			</listbox>
 		</div>
 		<div>
 			<label value="${msg['description']}"  style="display: inline-block; width:15em"/>
 			<textbox bind="/window/model:/process[1]/@name" width="50em"/>
 		</div>
-		<div>
-			<label value="${msg['cisoReview']}"  style="display: inline-block; width:15em"/>
-			<checkbox id="cisoReviewCheckbox" bind="/window/model:/process[1]/cisoReview">
-				<attribute name="onCheck"><![CDATA[
-				   cisoRoleTextbox.setDisabled( ! self.isChecked()); 
-				]]></attribute>
-			</checkbox>
-			<label value="${msg['cisoRole']}" style="margin-left:3em; margin-right:1em"></label>
-			<textbox id="cisoRoleTextbox" bind="/window/model:/process[1]/@cisoRole" width="50em"/>
-		</div>
-			<div style="width: 49%; vertical-align: top; display:inline-block; margin-top: 3em" id="gridGroups" >
-				<label value="${msg['selectgroup']}"/>
-				
-				<textbox id="txtGrupID" bind="@codi" sclass="textbox" style="margin-left: 2em; margin-right: 2em"
-					onOK="addGroup()"/>
-				
-				<imageclic src="~./img/grup.gif" tooltiptext="${msg['searchgroup']}">
-					<attribute name="onClick">
-						addExistingGroup(self);
-					</attribute>
-					<attribute name="onActualitza">
-						updateGroupData(event.data);
-					</attribute>
-				</imageclic>
-				
-				<imageclic src="~./img/list-add.gif" tooltiptext="${msg['addgroup']}" 
-					onClick="addGroup()"/>
-
-				<grid width="98%" dataPath="/window/model:/process[1]/group"  style="margin-top: 1em">
-					<columns>
-						<column label="${msg['group']}"/>
-						<column label="${msg['managerrole']}"/>
-						<column width="30px"/>
-					</columns>
-					
-					<datarow>
-						<label bind="@group"/>
-						
-						<hbox>
-							<textbox id="txtboxManager" bind="@managerRole"  width="20em" />
-							<separator spacing="5px" />
-							
-							<imageclic id="btnGrantRole" src="~./img/list-add.gif"
-								tooltiptext="Select manager role">
-									<attribute name="onClick">
-										addExistingRole(self);
-									</attribute>
-									<attribute name="onActualitza">
-										updateManagerData(event.data);
-									</attribute>
-							</imageclic>
-						</hbox>
-						
-						<imageclic src="~./img/list-remove.gif" 
-							tooltiptext="Delete group" onClick="deleteGroup(self)"/>
-					</datarow>
-				</grid>
-				<checkbox bind="@userReview" label="${msg['review']}" visible="false"/>
-			</div>
+		<div sclass="blockgroups" id="gridGroups" >
+			<label value="${msg['selectgroup']}"/>
 			
-			<div style="width: 49%; vertical-align: top; display: inline-block; ; margin-top: 3em" >
-				<label value="${msg['SelectApp']}"/>
-				
-				<textbox id="txtIS" onOK="addIS()" bind="@appName" sclass="textbox" style="margin-left: 2em; margin-right: 2em"/>
-				
-				<imageclic src="/img/info.png" tooltiptext="${msg['SearchIS']}">
-					<attribute name="onClick">
-						addExistingIS(self);
-					</attribute>
-					<attribute name="onActualitza">
-						updateISData(event.data);
-					</attribute>
-				</imageclic>
-				
-				<imageclic src="~./img/list-add.gif" tooltiptext="${msg['AddIS']}" 
-					onClick="addIS()"/>
-				
-				<grid  width="98%" dataPath="/window/model:/process[1]/app" style="margin-top: 1em">
-					<columns>
-						<column label="${msg['application']}"/>
-						<column label="${msg['managerrole']}"/>
-						<column width="30px"/>
-					</columns>
-					
-					<datarow>
-						<label bind="@informationSystem"/>
-						
-						<hbox>
-							<textbox id="txtboxOwner"  bind="@appOwnerRole" width="20em" />
-							<separator spacing="5px" />
-							
-							<imageclic id="btnGrantRole" src="~./img/list-add.gif"
-								tooltiptext="Select manager role">
-									<attribute name="onClick">
-										addExistingRole(self);
-									</attribute>
-									<attribute name="onActualitza">
-										updateOwnerData(event.data);
-									</attribute>
-							</imageclic>
-						</hbox>
-						
+			<textbox id="txtGrupID" bind="@codi" sclass="textbox" style="margin-left: 2em; margin-right: 2em"
+				onOK="addGroup()"/>
+			
+			<imageclic src="~./img/grup.gif" tooltiptext="${msg['searchgroup']}">
+				<attribute name="onClick">
+					addExistingGroup(self);
+				</attribute>
+				<attribute name="onActualitza">
+					updateGroupData(event.data);
+				</attribute>
+			</imageclic>
+			
+			<imageclic src="~./img/list-add.gif" tooltiptext="${msg['addgroup']}" 
+				onClick="addGroup()"/>
 
-						<imageclic src="~./img/list-remove.gif" 
-							tooltiptext="Delete application" onClick="deleteApp(self)"/>
-					</datarow>
-				</grid>
-			</div>
+			<grid width="98%" dataPath="/window/model:/process[1]/group"  style="margin-top: 1em">
+				<columns>
+					<column label="${msg['group']}"/>
+					<column label="${msg['managerrole']}" visible="false"/>
+					<column width="30px"/>
+				</columns>
+				
+				<datarow>
+					<label bind="@group"/>
+					
+					<hbox>
+						<textbox id="txtboxManager" bind="@managerRole"  width="20em" />
+						<separator spacing="5px" />
+						
+						<imageclic id="btnGrantRole" src="~./img/list-add.gif"
+							tooltiptext="Select manager role">
+								<attribute name="onClick">
+									addExistingRole(self);
+								</attribute>
+								<attribute name="onActualitza">
+									updateManagerData(event.data);
+								</attribute>
+						</imageclic>
+					</hbox>
+					
+					<imageclic src="~./img/list-remove.gif" 
+						tooltiptext="Delete group" onClick="deleteGroup(self)"/>
+				</datarow>
+			</grid>
+			<checkbox bind="@userReview" label="${msg['review']}" visible="false"/>
+		</div>
+		
+		<div sclass="blockgroups" >
+			<label value="${msg['SelectApp']}"/>
+			
+			<textbox id="txtIS" onOK="addIS()" bind="@appName" sclass="textbox" style="margin-left: 2em; margin-right: 2em"/>
+			
+			<imageclic src="/img/info.png" tooltiptext="${msg['SearchIS']}">
+				<attribute name="onClick">
+					addExistingIS(self);
+				</attribute>
+				<attribute name="onActualitza">
+					updateISData(event.data);
+				</attribute>
+			</imageclic>
+			
+			<imageclic src="~./img/list-add.gif" tooltiptext="${msg['AddIS']}" 
+				onClick="addIS()"/>
+			
+			<grid  width="98%" dataPath="/window/model:/process[1]/app" style="margin-top: 1em">
+				<columns>
+					<column label="${msg['application']}"/>
+					<column label="${msg['managerrole']}" visible="false"/>
+					<column width="30px"/>
+				</columns>
+				
+				<datarow>
+					<label bind="@informationSystem"/>
+					
+					<hbox>
+						<textbox id="txtboxOwner"  bind="@appOwnerRole" width="20em" />
+						<separator spacing="5px" />
+						
+						<imageclic id="btnGrantRole" src="~./img/list-add.gif"
+							tooltiptext="Select manager role">
+								<attribute name="onClick">
+									addExistingRole(self);
+								</attribute>
+								<attribute name="onActualitza">
+									updateOwnerData(event.data);
+								</attribute>
+						</imageclic>
+					</hbox>
+					
+
+					<imageclic src="~./img/list-remove.gif" 
+						tooltiptext="Delete application" onClick="deleteApp(self)"/>
+				</datarow>
+			</grid>
+		</div>
 	</task>
 <!-- 	<debugwindow></debugwindow> -->
 	

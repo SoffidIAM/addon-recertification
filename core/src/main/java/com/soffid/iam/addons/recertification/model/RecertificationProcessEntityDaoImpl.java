@@ -14,7 +14,6 @@ import com.soffid.iam.addons.recertification.common.RecertificationType;
  */
 public class RecertificationProcessEntityDaoImpl extends RecertificationProcessEntityDaoBase
 {
-
 	@Override
 	public void toRecertificationProcess(RecertificationProcessEntity source,
 			RecertificationProcess target) {
@@ -68,6 +67,8 @@ public class RecertificationProcessEntityDaoImpl extends RecertificationProcessE
 			else
 				target.setPctDone((int) (100 * done / total));
 		}
+		if (source.getTemplate() != null)
+			target.setTemplate(source.getTemplate().getName());
 	}
 
 	@Override
@@ -75,6 +76,21 @@ public class RecertificationProcessEntityDaoImpl extends RecertificationProcessE
 		getRecertifiedInformationSystemEntityDao().remove(entity.getInformationSystems());
 		getRecertifiedGroupEntityDao().remove(entity.getGroups());
 		super.remove(entity);
+	}
+
+	@Override
+	public void recertificationProcessToEntity(RecertificationProcess source, RecertificationProcessEntity target,
+			boolean copyIfNull) {
+		super.recertificationProcessToEntity(source, target, copyIfNull);
+		if (source.getTemplate() == null)
+			target.setTemplate(null);
+		else
+		{
+			RecertificationTemplateEntity f = getRecertificationTemplateEntityDao().findByName(source.getTemplate());
+			if (f == null)
+				throw new RuntimeException ("Cannot find template "+source.getTemplate());
+			target.setTemplate(f);
+		}
 	}
 	
 	

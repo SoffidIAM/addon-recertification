@@ -8,7 +8,7 @@ package com.soffid.iam.addons.recertification.model;
 import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
-@Entity (table="SCR_RECIS" )
+@Entity (table="SCV_RECIS" )
 @Depends ({com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem.class,
 	com.soffid.iam.addons.recertification.model.RecertificationProcessEntity.class,
 	es.caib.seycon.ng.model.AplicacioEntity.class})
@@ -20,7 +20,6 @@ public abstract class RecertifiedInformationSystemEntity {
 	public java.lang.Long id;
 
 	@Column (name="RIS_TEN_ID")
-	@Nullable
 	TenantEntity tenant;
 
 	@Column (name="RIS_PROCES")

@@ -8,7 +8,7 @@ package com.soffid.iam.addons.recertification.model;
 import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
-@Entity (table="SCR_RECUSR" )
+@Entity (table="SCV_RECUSR" )
 @Depends ({com.soffid.iam.addons.recertification.common.RecertifiedUser.class,
 	com.soffid.iam.addons.recertification.model.RecertifiedGroupEntity.class,
 	com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity.class,
@@ -21,10 +21,8 @@ public abstract class RecertifiedUserEntity {
 	public java.lang.Long id;
 
 	@Column (name="RUS_TEN_ID")
-	@Nullable
 	TenantEntity tenant;
 
-	
 	@Column (name="RUS_ACTACC")
 	public java.lang.Boolean activeAccount;
 
@@ -34,20 +32,20 @@ public abstract class RecertifiedUserEntity {
 
 	@Column (name="RUS_USERRW")
 	@Nullable
-	public java.util.Date userReview;
+	public java.util.Date step1;
 
 	@Column (name="RUS_BOSSRW")
 	@Nullable
-	public java.util.Date bossReview;
-
-	@Column (name="RUS_CISORW")
-	@Nullable
-	public java.util.Date cisoReview;
+	public java.util.Date step2;
 
 	@Column (name="RUS_APOWRW")
 	@Nullable
-	public java.util.Date appOwnerReview;
+	public java.util.Date step3;
 
+	@Column (name="RUS_CISORW")
+	@Nullable
+	public java.util.Date step4;
+	
 
 	@Column (name="RUS_STATUS")
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;

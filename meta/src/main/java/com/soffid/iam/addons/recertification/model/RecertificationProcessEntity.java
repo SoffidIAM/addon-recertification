@@ -8,14 +8,16 @@ package com.soffid.iam.addons.recertification.model;
 import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
-@Entity (table="SCR_RECPROC" )
+@Entity (table="SCV_RECPROC" )
 @Depends ({com.soffid.iam.addons.recertification.common.RecertificationProcess.class,
 	com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemEntity.class,
 	com.soffid.iam.addons.recertification.model.RecertifiedGroupEntity.class})
 public abstract class RecertificationProcessEntity {
 	@Column (name="RPR_TEN_ID")
-	@Nullable
 	TenantEntity tenant;
+
+	@Column (name="RPR_RCT_ID")
+	public RecertificationTemplateEntity template;
 
 	@Column (name="RPR_NAME")
 	public java.lang.String name;

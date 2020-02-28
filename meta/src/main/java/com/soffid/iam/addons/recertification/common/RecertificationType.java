@@ -14,4 +14,6 @@ public class RecertificationType {
 
 	public java.lang.String ROLEDEFINITIONS="R";
 
+	public java.lang.String ACCOUNTS="A";
+
 }

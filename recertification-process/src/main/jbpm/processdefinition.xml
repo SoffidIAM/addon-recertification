@@ -38,18 +38,15 @@
 		<transition to="Waiting for group certification"></transition>
 	</node>
 
-	<state name="Waiting for group certification" async="true">
-		<transition to="Cancelled" name="Cancel"></transition>
+	<node name="Waiting for group certification" async="true">
+		<action name="Notify" class="com.soffid.iam.recertification.bpm.NotifyHandler"></action>
+		<timer duedate="1 day" name="Send emails" repeat="1 day">
+			<action name="Notify " class="com.soffid.iam.recertification.bpm.NotifyHandler"></action>
+		</timer>
 		<transition to="End" name="End"></transition>
-	</state>
-
+	</node>
 
 	<end-state name="Cancelled"></end-state>
 
 	<end-state name="End"></end-state>
-
-
-	<event type="process-end">
-		<action class="com.soffid.iam.recertification.bpm.ProcessFinishedHandler"></action>
-	</event>
 </process-definition>

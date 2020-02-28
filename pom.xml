@@ -101,9 +101,8 @@
     <module>web</module>
     <module>addon</module>
     <module>recertification-process</module>
-    <module>recertification-group</module>
-    <module>recertification-role</module>
     <module>bpm-container</module>
+    <module>selfservice</module>
   </modules>
   <dependencies>
     <dependency>
@@ -114,7 +113,7 @@
     </dependency>
   </dependencies>
   <properties>
-    <console.version>2.0.0-M1</console.version>
+    <console.version>2.7.1-SNAPSHOT</console.version>
   </properties>
   <pluginRepositories>
     <pluginRepository>

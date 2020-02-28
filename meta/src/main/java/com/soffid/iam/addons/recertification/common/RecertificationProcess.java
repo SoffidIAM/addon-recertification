@@ -12,6 +12,8 @@ public class RecertificationProcess {
 
 	public java.lang.String name;
 
+	public String template;
+	
 	public java.util.Calendar startDate;
 
 	@Nullable

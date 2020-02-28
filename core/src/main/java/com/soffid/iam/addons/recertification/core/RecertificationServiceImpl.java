@@ -4,20 +4,28 @@
 package com.soffid.iam.addons.recertification.core;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jbpm.JbpmContext;
-import org.jbpm.context.exe.ContextInstance;
-import org.jbpm.graph.exe.ProcessInstance;
+import org.jbpm.jpdl.el.FunctionMapper;
+import org.jbpm.jpdl.el.VariableResolver;
+import org.jbpm.jpdl.el.impl.ExpressionEvaluatorImpl;
 
-import com.soffid.iam.addons.recertification.Constants;
-import com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity;
+import com.soffid.iam.ServiceLocator;
 import com.soffid.iam.addons.recertification.common.ProcessStatus;
 import com.soffid.iam.addons.recertification.common.RecertificationProcess;
 import com.soffid.iam.addons.recertification.common.RecertificationProcessCriteria;
+import com.soffid.iam.addons.recertification.common.RecertificationTemplate;
 import com.soffid.iam.addons.recertification.common.RecertificationType;
 import com.soffid.iam.addons.recertification.common.RecertifiedGroup;
 import com.soffid.iam.addons.recertification.common.RecertifiedInformationSystem;
@@ -26,26 +34,30 @@ import com.soffid.iam.addons.recertification.common.RecertifiedRoleDefinition;
 import com.soffid.iam.addons.recertification.common.RecertifiedUser;
 import com.soffid.iam.addons.recertification.model.RecertificationProcessEntity;
 import com.soffid.iam.addons.recertification.model.RecertificationProcessEntityDao;
+import com.soffid.iam.addons.recertification.model.RecertificationTemplateEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedGroupEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedGroupEntityDao;
 import com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemEntityDao;
 import com.soffid.iam.addons.recertification.model.RecertifiedRoleDefinitionEntity;
+import com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedUserEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedUserEntityDao;
 import com.soffid.iam.api.BpmUserProcess;
+import com.soffid.iam.api.Role;
 import com.soffid.iam.api.RoleAccount;
-import com.soffid.iam.api.RoleGrant;
-import com.soffid.iam.api.User;
 import com.soffid.iam.model.GroupEntity;
+import com.soffid.iam.model.Parameter;
+import com.soffid.iam.model.RoleAccountEntity;
 import com.soffid.iam.model.RoleEntity;
 import com.soffid.iam.model.UserEntity;
+import com.soffid.iam.service.impl.bshjail.SecureInterpreter;
 
-import es.caib.seycon.ng.comu.Account;
-import es.caib.seycon.ng.comu.RolAccount;
-import es.caib.seycon.ng.comu.RolGrant;
-import es.caib.seycon.ng.comu.Usuari;
-import es.caib.seycon.ng.comu.UsuariWFProcess;
+import bsh.Modifiers;
+import bsh.NameSpace;
+import bsh.TargetError;
+import bsh.UtilEvalError;
+import es.caib.seycon.ng.comu.SoDRisk;
 import es.caib.seycon.ng.exception.InternalErrorException;
 import es.caib.seycon.ng.utils.Security;
 
@@ -54,7 +66,7 @@ import es.caib.seycon.ng.utils.Security;
  *
  */
 public class RecertificationServiceImpl extends RecertificationServiceBase {
-
+	Log log = LogFactory.getLog(getClass());
 	/* (non-Javadoc)
 	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleCreate(com.soffid.iam.recertification.common.RecertificationProcess)
 	 */
@@ -109,29 +121,6 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		RecertifiedGroupEntityDao dao = getRecertifiedGroupEntityDao();
 		RecertifiedGroupEntity e = dao.recertifiedGroupToEntity(rg);
 		dao.create(e);
-		return dao.toRecertifiedGroup(e);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleUpdate(com.soffid.iam.recertification.common.RecertifiedGroup)
-	 */
-	@Override
-	protected RecertifiedGroup handleUpdate(RecertifiedGroup rg)
-			throws Exception {
-		RecertifiedGroupEntityDao dao = getRecertifiedGroupEntityDao();
-		RecertifiedGroupEntity e = dao.load(rg.getId());
-		if (e.getProcess().getStatus() == ProcessStatus.PREPARATION)
-		{
-			e = dao.recertifiedGroupToEntity(rg);
-			dao.update(e);
-		} else if (e.getProcess().getStatus() == ProcessStatus.ACTIVE) {
-			e.setStatus(rg.getStatus());
-		} else if (e.getProcess().getStatus() == ProcessStatus.FINISHED) {
-			// Ignore
-		} else {
-			throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NotUpdate")); //$NON-NLS-1$
-		}
-		dao.update(e);
 		return dao.toRecertifiedGroup(e);
 	}
 
@@ -193,64 +182,6 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		dao.remove (rg.getId());
 	}
 
-	/* (non-Javadoc)
-	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleStartRecertificationProcess(com.soffid.iam.recertification.common.RecertificationProcess)
-	 */
-	@Override
-	protected void handleStartGroupRecertificationProcess(RecertificationProcess rp)
-			throws Exception {
-		RecertificationProcessEntity rpe = getRecertificationProcessEntityDao().load(rp.getId());
-		if (rpe.getStatus() != ProcessStatus.PREPARATION)
-			throw new InternalErrorException (Messages.getString("RecertificationServiceImpl.AlreadyStarted")); //$NON-NLS-1$
-		JbpmContext ctx = getBpmEngine().getContext();
-		try {
-			rpe.setStartDate( new Date ());
-			rpe.setStatus(ProcessStatus.ACTIVE);
-			getRecertificationProcessEntityDao().update(rpe);
-			
-			if (rpe.getGroups().isEmpty())
-				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NotSelected")); //$NON-NLS-1$
-			
-			if (rpe.getInformationSystems().isEmpty())
-				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NoSystemSelected")); //$NON-NLS-1$
-			
-			for (RecertifiedGroupEntity rge: rpe.getGroups())
-			{
-				for (UserEntity ue: rge.getGroup().getPrimaryGroupUsers())
-				{
-					if ("S".equals(ue.getActive())) //$NON-NLS-1$
-					{
-						// Test if this user has any role on the applied Information Systems.
-						Collection<RoleAccount> grants = getRecertifiedRoles (ue, rpe);
-						if (! grants.isEmpty())
-						{
-							RecertifiedUserEntity rue = getRecertifiedUserEntityDao().newRecertifiedUserEntity();
-							rue.setActiveAccount(Boolean.TRUE);
-							rue.setCreatedOn(new Date());
-							rue.setGroup(rge);
-							rue.setStatus(ProcessStatus.PREPARATION);
-							rue.setUser(ue);
-							getRecertifiedUserEntityDao().create(rue);
-							rge.getUsers().add(rue);
-							if (rp.getWorkflowId() != null)
-							{
-								BpmUserProcess uwp = new BpmUserProcess();
-								uwp.setUserCode(ue.getUserName());
-								uwp.setTerminated(new Boolean(true));
-								uwp.setProcessId(rp.getWorkflowId());
-								getUserService().create(uwp);
-							}
-						}
-					}
-				}
-				rge.setStatus(ProcessStatus.PREPARATION);
-				getRecertifiedGroupEntityDao().update(rge);
-			}
-		} finally {
-			ctx.close ();
-		}
-	}
-	
 	private Collection<RoleAccount> getRecertifiedRoles(UserEntity ue,
 			RecertificationProcessEntity rpe) throws InternalErrorException {
 
@@ -425,258 +356,205 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 
 	private void applyUserRecertification(RecertifiedUserEntity rue)
 			throws InternalErrorException {
-		if (rue.getBossReview() == null)
-			rue.setBossReview(new Date());
-		rue.setStatus(ProcessStatus.FINISHED);
-		getRecertifiedUserEntityDao().update(rue);
-		if (rue.getActiveAccount().booleanValue())
-		{
-			Security.nestedLogin(Security.getCurrentAccount(), new String[] {
-				Security.AUTO_USER_QUERY+Security.AUTO_ALL,
-				Security.AUTO_USER_UPDATE+Security.AUTO_ALL,
-				Security.AUTO_USER_ROLE_DELETE+Security.AUTO_ALL,
-				Security.AUTO_USER_ROLE_QUERY+Security.AUTO_ALL
-			});
-			try {
-				User usuari = getUserService().findUserByUserName(rue.getUser().getUserName());
-				Collection<RoleAccount> roles = getRecertifiedRoles (rue.getUser(), rue.getGroup().getProcess());
-				for (RecertifiedRoleEntity rre: rue.getRoles())
-				{
-					if (! rre.isCheckedByBoss() || ! rre.isCheckedByAppOwner() ||
-							( rue.getGroup().getProcess().getCisoReview() && ! rre.isCheckedByCiso()))
-					{
-						// Disable RolAccount.
-						for (RoleAccount rolAccount: roles)
-						{
-							if (rolAccount.getId().equals (rre.getRolAccountId()))
-							{
-								getApplicationService().delete(rolAccount);
-							}
-						}
-					}
-				}
-			} finally {
-				Security.nestedLogoff();
-			}
-		}
-		else
-		{
-			Security.nestedLogin(Security.getCurrentAccount(), new String[] {
-				Security.AUTO_USER_QUERY+Security.AUTO_ALL,
-				Security.AUTO_USER_UPDATE+Security.AUTO_ALL
-			});
-			try {
-				User usuari = getUserService().findUserByUserName(rue.getUser().getUserName());
-				usuari.setActive(Boolean.FALSE);
-				getUserService().update(usuari);
-			} finally {
-				Security.nestedLogoff();
-			}
-		}
-		if (rue.getWorkflowId() != null)
-		{
-			Collection<BpmUserProcess> uwps = getUserService().findBpmUserProcessByProcessId(rue.getWorkflowId());
-			if (uwps == null || uwps.isEmpty())
-			{
-				BpmUserProcess uwp = new BpmUserProcess();
-				uwp.setUserCode(rue.getUser().getUserName());
-				uwp.setTerminated(new Boolean(false));
-				uwp.setProcessId(rue.getWorkflowId());
-				getUserService().create(uwp);
-			} else {
-				for (BpmUserProcess uwp: uwps)
-				{
-					uwp.setTerminated(Boolean.TRUE);
-					getUserService().update(uwp);
-				}
-			}
-		}
 	}
 
 	/* (non-Javadoc)
 	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleCheckByUser(com.soffid.iam.recertification.common.RecertifiedRole)
 	 */
 	@Override
-	protected void handleCheckByUser(RecertifiedRole rr, boolean check) throws Exception {
+	protected void handleCheck(RecertifiedRole rr, boolean check) throws Exception {
 		RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().load(rr.getId());
-		String affectedUser = rre.getUser().getUser().getUserName();
-		if (affectedUser.equals(Security.getPrincipal().getName()))
+		com.soffid.iam.common.security.SoffidPrincipal p = Security.getSoffidPrincipal();
+		boolean success = false;
+		if (rre.getCheck1() == null)
 		{
-			rre.setCheckedByBoss(check);
-			rre.setCheckedByUser(check);
-			getRecertifiedRoleEntityDao().update(rre);
-			RecertifiedUserEntity rue = rre.getUser();
-			rue.setUserReview(new Date());
-			getRecertifiedUserEntityDao().update(rue);
+			if (isValidToCheck (rre.getStep1Users() ))
+			{
+				rre.setCheck1(check);
+				rre.setStep1Author(p.getUserName());
+				rre.setStep1Date(new Date());
+				success = true;
+			}
+			else
+				throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
 		}
-		else
-			throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
+		if (rre.getCheck2() == null)
+		{
+			if (isValidToCheck (rre.getStep2Users() ))
+			{
+				rre.setCheck2(check);
+				rre.setStep2Author(p.getUserName());
+				rre.setStep2Date(new Date());
+				success = true;
+			}
+			else if (!success)
+				throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
+		}
+		if (rre.getCheck3() == null)
+		{
+			if (isValidToCheck (rre.getStep3Users() ))
+			{
+				rre.setCheck3(check);
+				rre.setStep3Author(p.getUserName());
+				rre.setStep3Date(new Date());
+				success = true;
+			}
+			else if (!success)
+				throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
+		}
+		if (rre.getCheck4() == null)
+		{
+			if (isValidToCheck (rre.getStep4Users() ))
+			{
+				rre.setCheck4(check);
+				rre.setStep4Author(p.getUserName());
+				rre.setStep4Date(new Date());
+				success = true;
+			}
+			else if (!success)
+				throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
+		}
+		if (success)
+		{
+			getRecertifiedRoleEntityDao().update(rre);
+			if ( isFinished (rre))
+			{
+				if ( rre.getUser() != null)
+					checkUserStatus(rre.getUser());
+				if ( rre.getInformationSystem() != null)
+					checkISStatus(rre.getInformationSystem());
+			}
+		}
+		if (!check)
+		{
+			Security.nestedLogin(Security.getCurrentAccount(), new String[] {
+					Security.AUTO_USER_QUERY+Security.AUTO_ALL,
+					Security.AUTO_USER_UPDATE+Security.AUTO_ALL,
+					Security.AUTO_USER_ROLE_DELETE+Security.AUTO_ALL,
+					Security.AUTO_USER_ROLE_QUERY+Security.AUTO_ALL
+				});
+				try {
+					RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
+					RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
+					if (ra != null && ra.isEnabled())
+						getApplicationService().delete(ra);
+				} finally {
+					Security.nestedLogoff();
+				}
+			
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleCheckByBos(com.soffid.iam.recertification.common.RecertifiedRole)
-	 */
-	@Override
-	protected void handleCheckByBoss(RecertifiedRole rr, boolean check) throws Exception {
-		RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().load(rr.getId());
-		GroupEntity ge = rre.getUser().getGroup().getGroup();
-		String roleName = rre.getUser().getGroup().getManagerRole();
-		
-		if (! isRole (roleName))
-			throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
-		
-		rre.setCheckedByBoss(check);
-		getRecertifiedRoleEntityDao().update(rre);
-		return;
+	public void checkUserStatus(RecertifiedUserEntity u) {
+		boolean done = true;
+		for ( RecertifiedRoleEntity rre2: u.getRoles())
+		{
+			if ( ! isFinished(rre2))
+			{
+				done = false;
+				break;
+			}
+		}
+		if (done)
+		{
+			u.setStatus(ProcessStatus.FINISHED);
+			u.setStep1(new Date());
+			getRecertifiedUserEntityDao().update(u);
+			RecertifiedGroupEntity g = u.getGroup();
+			checkGroupStatus(g);
+		}
 	}
-	
+
+	public void checkISStatus(RecertifiedInformationSystemEntity is) {
+		RecertifiedInformationSystem vo = getRecertifiedInformationSystemEntityDao().toRecertifiedInformationSystem(is);
+		if (vo.getPctDone().intValue() == 100)
+		{
+			is.setStatus(ProcessStatus.FINISHED);
+			getRecertifiedInformationSystemEntityDao().update(is);
+			checkProcessStatus(is.getProcess());
+		}
+	}
+
+	public void checkGroupStatus(RecertifiedGroupEntity g) {
+		boolean done;
+		done = true;
+		for ( RecertifiedUserEntity u2: g.getUsers())
+		{
+			if ( u2.getStatus() != ProcessStatus.FINISHED)
+			{
+				done = false;
+				break;
+			}
+		}
+		if (done)
+		{
+			g.setStatus(ProcessStatus.FINISHED);
+			getRecertifiedGroupEntityDao().update(g);
+			RecertificationProcessEntity proc = g.getProcess();
+			checkProcessStatus(proc);
+		}
+	}
+
+	public void checkProcessStatus(RecertificationProcessEntity proc) {
+		boolean done;
+		done = true;
+		if (proc.getType() == RecertificationType.ENTITLEMENTS)
+		{
+			for (RecertifiedGroupEntity g2: proc.getGroups()) {
+				if (g2.getStatus() != ProcessStatus.FINISHED && g2.getStatus() != ProcessStatus.CANCELLED)
+				{
+					done = false;
+					break;
+				}
+			}
+		} 
+		else
+		{
+			for (RecertifiedInformationSystemEntity g2: proc.getInformationSystems()) {
+				if (g2.getStatus() != ProcessStatus.FINISHED && g2.getStatus() != ProcessStatus.CANCELLED)
+				{
+					done = false;
+					break;
+				}
+			}
+		} 
+		if (done)
+		{
+			proc.setStatus(ProcessStatus.FINISHED);
+			proc.setFinishDate(new Date());
+			getRecertificationProcessEntityDao().update(proc);
+		}
+	}
+
+	private boolean isFinished(RecertifiedRoleEntity rre) {
+		if  ( rre.getStep1Users() != null && ! rre.getStep1Users().trim().isEmpty() && rre.getCheck1() == null ||
+				 rre.getStep2Users() != null && ! rre.getStep2Users().trim().isEmpty() && rre.getCheck2() == null ||
+				 rre.getStep3Users() != null && ! rre.getStep3Users().trim().isEmpty() && rre.getCheck3() == null ||
+				 rre.getStep4Users() != null && ! rre.getStep4Users().trim().isEmpty() && rre.getCheck4() == null )
+			return false;
+		else
+			return true;
+	}
+
+	private boolean isValidToCheck(String step1Author) {
+		if (step1Author == null || step1Author.trim().isEmpty())
+			return false;
+		
+		com.soffid.iam.common.security.SoffidPrincipal p = Security.getSoffidPrincipal();
+		for (String part: step1Author.split(" +"))
+		{
+			if (p.getUserName().equals(part))
+				return true;
+			for (String role: p.getRoles())
+				if (role.equals(part))
+					return true;
+		}
+		return false;
+	}
+
 	private boolean isRole (String roleName) throws InternalErrorException
 	{
 		return getBpmEngine().isUserInRole(roleName);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleDisableUser(com.soffid.iam.recertification.common.RecertifiedUser)
-	 */
-	@Override
-	protected void handleEnableUser(RecertifiedUser ru, boolean checked) throws Exception {
-		RecertifiedUserEntity rue = getRecertifiedUserEntityDao().load(ru.getId());
-		GroupEntity ge = rue.getGroup().getGroup();
-		String roleName = rue.getGroup().getManagerRole();
-		
-		if (! isRole (roleName))
-			throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
-		
-		rue.setActiveAccount(new Boolean(checked));
-		getRecertifiedUserEntityDao().update(rue);
-		return;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleCancelUserRecertification(com.soffid.iam.recertification.common.RecertifiedUser)
-	 */
-	@Override
-	protected void handleCancelUserRecertification(RecertifiedUser ru)
-			throws Exception {
-		RecertifiedUserEntity rue = getRecertifiedUserEntityDao().load(ru.getId());
-		cancelRecertifiedUser(rue);
-	
-	}
-
-	private void cancelRecertifiedUser(RecertifiedUserEntity rue)
-			throws InternalErrorException {
-		if (rue.getStatus() == ProcessStatus.ACTIVE)
-		{
-			if (rue.getWorkflowId() != null)
-			{
-				JbpmContext ctx = getBpmEngine().getContext();
-				try {
-					ProcessInstance pi = ctx.getProcessInstance(rue.getWorkflowId().longValue());
-					pi.signal(Constants.CANCEL_TRANSITION);
-				} finally {
-					ctx.close ();
-				}
-			}
-			rue.setStatus(ProcessStatus.CANCELLED);
-			getRecertifiedUserEntityDao().update(rue);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleCancelRecertification(com.soffid.iam.recertification.common.RecertificationProcess)
-	 */
-	@Override
-	protected void handleCancelRecertification(RecertificationProcess rp)
-			throws Exception {
-		RecertificationProcessEntity rpe = getRecertificationProcessEntityDao().load(rp.getId());
-		cancelRecertification (rpe);
-	}
-
-	private void cancelRecertification(RecertificationProcessEntity rpe) throws InternalErrorException {
-		if (rpe.getStatus() == ProcessStatus.ACTIVE)
-		{
-			if (rpe.getWorkflowId() != null)
-			{
-				JbpmContext ctx = getBpmEngine().getContext();
-				try {
-					ProcessInstance pi = ctx.getProcessInstance(rpe.getWorkflowId().longValue());
-					pi.signal(Constants.CANCEL_TRANSITION);
-				} finally {
-					ctx.close ();
-				}
-			}
-			rpe.setStatus(ProcessStatus.CANCELLED);
-			getRecertificationProcessEntityDao().update(rpe);
-			for (RecertifiedGroupEntity rge: rpe.getGroups())
-				cancelGroupRecertification (rge);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleCancelGroupRecertification(com.soffid.iam.recertification.common.RecertifiedGroup)
-	 */
-	@Override
-	protected void handleCancelGroupRecertification(RecertifiedGroup rg)
-			throws Exception {
-		RecertifiedGroupEntity rge = getRecertifiedGroupEntityDao().load(rg.getId());
-		cancelGroupRecertification (rge);
-
-	}
-
-	private void cancelGroupRecertification(RecertifiedGroupEntity rge) throws InternalErrorException {
-		if (rge.getStatus() == ProcessStatus.ACTIVE)
-		{
-			if (rge.getWorkflowId() != null)
-			{
-				JbpmContext ctx = getBpmEngine().getContext();
-				try {
-					ProcessInstance pi = ctx.getProcessInstance(rge.getWorkflowId().longValue());
-					pi.signal(Constants.CANCEL_TRANSITION);
-				} finally {
-					ctx.close ();
-				}
-			}
-			rge.setStatus(ProcessStatus.CANCELLED);
-			getRecertifiedGroupEntityDao().update(rge);
-			for (RecertifiedUserEntity rue: rge.getUsers())
-				cancelRecertifiedUser(rue);
-		}
-	}
-
-	@Override
-	protected void handleStartUserRecertification(RecertifiedGroup rg)
-			throws Exception {
-		RecertifiedGroupEntity rge = getRecertifiedGroupEntityDao().load(rg.getId());
-		if (rge.getStatus() != ProcessStatus.PREPARATION)
-			throw new InternalErrorException (Messages.getString("RecertificationServiceImpl.AlreadyStarted")); //$NON-NLS-1$
-		JbpmContext ctx = getBpmEngine().getContext();
-		try {
-			rge.setStatus(ProcessStatus.ACTIVE);
-			getRecertifiedGroupEntityDao().update(rge);
-			for (RecertifiedUserEntity rue: rge.getUsers())
-			{
-				if (rue.getActiveAccount().booleanValue())
-				{
-					// Test if this user has any role on the applied Information Systems.
-					Collection<RoleAccount> grants = getRecertifiedRoles (rue.getUser(), rge.getProcess());
-					for (RoleAccount grant: grants)
-					{
-						RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().newRecertifiedRoleEntity();
-						rre.setCheckedByBoss(false);
-						rre.setCheckedByUser(false);
-						rre.setRolAccountId(grant.getId());
-						rre.setUser(rue);
-						getRecertifiedRoleEntityDao().create(rre);
-					}
-					rue.setStatus(ProcessStatus.ACTIVE);
-					getRecertifiedUserEntityDao().update(rue);
-				} else {
-					applyUserRecertification(rue);
-				}
-			}
-		} finally {
-			ctx.close ();
-		}
 	}
 
 	@Override
@@ -772,28 +650,6 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	}
 
 	@Override
-	protected void handleCheckByAppOwner(RecertifiedRole rr, boolean check)
-			throws Exception {
-		RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().load(rr.getId());
-		RecertificationProcessEntity process = rre.getUser().getGroup().getProcess();
-		String app = rr.getRol().getInformationSystemName();
-		for (RecertifiedInformationSystemEntity is: process.getInformationSystems())
-		{
-			if (is.getInformationSystem().getName().equals (app))
-			{
-				if (! isRole (is.getAppOwnerRole()))
-					throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
-				
-			}
-		}
-		
-		
-		rre.setCheckedByAppOwner(check);
-		getRecertifiedRoleEntityDao().update(rre);
-		return;
-	}
-
-	@Override
 	protected void handleCheckByAppOwner(RecertifiedRoleDefinition rr,
 			boolean check) throws Exception {
 		RecertifiedRoleDefinitionEntity rre = getRecertifiedRoleDefinitionEntityDao().load(rr.getId());
@@ -819,21 +675,6 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	}
 
 	@Override
-	protected void handleCheckByCiso(RecertifiedRole rr, boolean check)
-			throws Exception {
-		RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().load(rr.getId());
-		RecertificationProcessEntity process = rre.getUser().getGroup().getProcess();
-		String app = rr.getRol().getInformationSystemName();
-		if (! isRole ( process.getCisoRole()))
-			throw new SecurityException (Messages.getString("RecertificationServiceImpl.NotAllowed")); //$NON-NLS-1$
-		
-		rre.setCheckedByCiso(check);
-		getRecertifiedRoleEntityDao().update(rre);
-		return;
-		
-	}
-
-	@Override
 	protected void handleSetRecertifiedInformationSystemWorkflowId(
 			RecertifiedInformationSystem ris, Long processId) throws Exception {
 		RecertifiedInformationSystemEntity rise = getRecertifiedInformationSystemEntityDao().load(ris.getId());
@@ -844,38 +685,325 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	}
 
 	@Override
-	protected void handleStartInformationSystemRecertificationProcess(
+	protected void handleStartRecertificationProcess(
 			RecertificationProcess rp) throws Exception {
 		RecertificationProcessEntity rpe = getRecertificationProcessEntityDao().load(rp.getId());
 		if (rpe.getStatus() != ProcessStatus.PREPARATION)
 			throw new InternalErrorException (Messages.getString("RecertificationServiceImpl.AlreadyStarted")); //$NON-NLS-1$
 
+		if (rpe.getTemplate() == null)
+			throw new InternalErrorException("Please, select a templet to start");
+
 		rpe.setStartDate( new Date ());
 		rpe.setStatus(ProcessStatus.ACTIVE);
+		rpe.setType(rpe.getTemplate().getType());
 		getRecertificationProcessEntityDao().update(rpe);
 		
-		if (rpe.getType().equals(RecertificationType.ENTITLEMENTS))
-			return;
 		
+		if (rpe.getType().equals(RecertificationType.ENTITLEMENTS))
+		{
+			startEntitlementProcess(rp, rpe);
+		}
+		if (rpe.getType().equals(RecertificationType.ACCOUNTS))
+		{
+			startAccountProcess(rp, rpe);
+		}
+		if (rpe.getType().equals(RecertificationType.ROLEDEFINITIONS))
+		{
+			startRoleDefinitionsProcess(rpe);
+		}
+	}
+
+	public void startRoleDefinitionsProcess(RecertificationProcessEntity rpe) throws Exception {
 		if (rpe.getInformationSystems().isEmpty())
 			throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NoSystemSelected")); //$NON-NLS-1$
 			
+		SecureInterpreter i = new SecureInterpreter();
+		NameSpace ns = i.getNameSpace();
+		ns.setTypedVariable("serviceLocator", ServiceLocator.class, ServiceLocator.instance(), new Modifiers());
+		String filterScript = rpe.getTemplate().getFilterScript();
+		
 		for (RecertifiedInformationSystemEntity ris: rpe.getInformationSystems())
 		{
 			for (RoleEntity role: ris.getInformationSystem().getRoles())
 			{
 				if (!role.getContainedRoles().isEmpty())
 				{
-					RecertifiedRoleDefinitionEntity rde = getRecertifiedRoleDefinitionEntityDao().newRecertifiedRoleDefinitionEntity();
-					rde.setCheckedByCiso(false);
-					rde.setCheckedByOwner(false);
-					rde.setInformationSystem(ris);
-					rde.setRoleId(role.getId());
-					getRecertifiedRoleDefinitionEntityDao().create(rde);
+					boolean skip = false;
+					if (filterScript != null && ! filterScript.trim().isEmpty())
+					{
+						Role r = getRoleEntityDao().toRole(role);
+						Modifiers m = new Modifiers();
+						ns.setTypedVariable("role", Role.class, r, new Modifiers());
+						try {
+							if ( Boolean.FALSE.equals(eval(i, filterScript)))
+								skip = true;
+						} catch ( TargetError e) {
+							if (e instanceof Exception)
+								throw ((Exception) e.getTarget());
+							else
+								throw e;
+						}
+					}
+					if ( ! skip)
+					{
+						RecertifiedRoleDefinitionEntity rde = getRecertifiedRoleDefinitionEntityDao().newRecertifiedRoleDefinitionEntity();
+						rde.setCheckedByCiso(false);
+						rde.setCheckedByOwner(false);
+						rde.setInformationSystem(ris);
+						rde.setRoleId(role.getId());
+						getRecertifiedRoleDefinitionEntityDao().create(rde);
+					}
 				}
 				ris.setStatus(ProcessStatus.ACTIVE);
 				getRecertifiedInformationSystemEntityDao().update(ris);
 			}
+		}
+	}
+
+	public void startAccountProcess(RecertificationProcess rp, RecertificationProcessEntity rpe)
+			throws Exception {
+		JbpmContext ctx = getBpmEngine().getContext();
+		try {
+			rpe.setStartDate( new Date ());
+			rpe.setStatus(ProcessStatus.ACTIVE);
+			getRecertificationProcessEntityDao().update(rpe);
+			
+			SecureInterpreter i = new SecureInterpreter();
+			NameSpace ns = i.getNameSpace();
+			ns.setTypedVariable("serviceLocator", ServiceLocator.class, ServiceLocator.instance(), new Modifiers());
+			
+			if (rpe.getInformationSystems().isEmpty())
+				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NoSystemSelected")); //$NON-NLS-1$
+			
+			for (RecertifiedInformationSystemEntity rge: rpe.getInformationSystems())
+			{
+				startIsAccountsRecertification(rpe, i, ns, rge);
+			}
+		} finally {
+			ctx.close ();
+		}
+	}
+
+	private void startIsAccountsRecertification(RecertificationProcessEntity rpe, SecureInterpreter i, NameSpace ns,
+			RecertifiedInformationSystemEntity rie) throws UtilEvalError, Exception {
+		String filterScript = rpe.getTemplate().getFilterScript();
+		
+		log.info("Starting account recertification for information system "+rie.getInformationSystem().getName());
+		boolean any = false;
+
+		List<RoleAccountEntity> q = getRoleAccountEntityDao().query("select ra "
+				+ "from com.soffid.iam.model.RoleAccountEntity as ra, "
+				+ "     com.soffid.iam.model.AccountEntity as acc, "
+				+ "     com.soffid.iam.model.InformationSystemEntity as app "
+				+ "where app.id=:id and "
+				+ "      ra.role.informationSystem=app and"
+				+ "      ra.account = acc and"
+				+ "      acc.disabled = :disabled and "
+				+ "      (acc.type = 'S' or acc.type='P' or acc.type='I')", 
+				new Parameter[] { 
+						new Parameter("id", rie.getInformationSystem().getId()),
+						new Parameter("disabled", Boolean.FALSE)
+						});
+		HashMap<Long,List<RoleAccountEntity>> grantsByAccount = new HashMap<Long,List<RoleAccountEntity>>();
+		for (RoleAccountEntity rae: q)
+		{
+			Long accountId = rae.getAccount().getId();
+			List<RoleAccountEntity> l = grantsByAccount.get(accountId);
+			if (l == null)
+			{
+				l = new LinkedList<RoleAccountEntity>();
+				grantsByAccount.put(accountId, l);
+			}
+			l.add(rae);
+		}
+		
+		for ( List<RoleAccountEntity> rael: grantsByAccount.values())
+		{
+			List<RoleAccount> grants = getRoleAccountEntityDao().toRoleAccountList(rael);
+			getSoDRuleService().qualifyRolAccountList(grants);
+			for (RoleAccount grant: grants)
+			{
+				boolean skip = false;
+				if (filterScript != null && ! filterScript.trim().isEmpty())
+				{
+					Modifiers m = new Modifiers();
+					ns.setTypedVariable("grant", RoleAccount.class, grant, new Modifiers());
+					if ( Boolean.FALSE.equals( eval(i, filterScript)))
+						skip = true;
+				}
+				if (! skip)
+				{
+					any = true;
+					RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().newRecertifiedRoleEntity();
+					rre.setRolAccountId(grant.getId());
+					rre.setInformationSystem(rie);
+					setReviewers(rpe, rre, i, ns, grant);
+					getRecertifiedRoleEntityDao().create(rre);
+				}
+			}
+		}
+		if (any)
+		{
+			rie.setStatus(ProcessStatus.ACTIVE);
+			getRecertifiedInformationSystemEntityDao().update(rie);
+		} else {
+			rie.setStatus(ProcessStatus.CANCELLED);
+			getRecertifiedInformationSystemEntityDao().update(rie);
+		}
+	}
+
+	public void startEntitlementProcess(RecertificationProcess rp, RecertificationProcessEntity rpe)
+			throws Exception {
+		JbpmContext ctx = getBpmEngine().getContext();
+		try {
+			rpe.setStartDate( new Date ());
+			rpe.setStatus(ProcessStatus.ACTIVE);
+			getRecertificationProcessEntityDao().update(rpe);
+			
+			SecureInterpreter i = new SecureInterpreter();
+			NameSpace ns = i.getNameSpace();
+			ns.setTypedVariable("serviceLocator", ServiceLocator.class, ServiceLocator.instance(), new Modifiers());
+			
+			if (rpe.getGroups().isEmpty())
+				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NotSelected")); //$NON-NLS-1$
+			
+			if (rpe.getInformationSystems().isEmpty())
+				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NoSystemSelected")); //$NON-NLS-1$
+			
+			Set<String> groups = new HashSet<String>();
+			List<GroupEntity> pendingGroups = new LinkedList<GroupEntity>();
+			for (RecertifiedGroupEntity rge: rpe.getGroups())
+			{
+				groups.add(rge.getGroup().getName());
+				startGroupRecertification(rpe, i, ns, rge);
+				for (GroupEntity child: rge.getGroup().getChildren())
+					pendingGroups.add(child);
+			}
+			while ( ! pendingGroups.isEmpty())
+			{
+				GroupEntity g = pendingGroups.get(0);
+				pendingGroups.remove(0);
+				if ( ! groups.contains(g.getName()))
+				{
+					RecertifiedGroupEntity rge = getRecertifiedGroupEntityDao().newRecertifiedGroupEntity();
+					rge.setGroup(g);
+					rge.setProcess(rpe);
+					rge.setStatus(ProcessStatus.ACTIVE);
+					getRecertifiedGroupEntityDao().create(rge);
+					groups.add(rge.getGroup().getName());
+					startGroupRecertification(rpe, i, ns, rge);
+					for (GroupEntity child: rge.getGroup().getChildren())
+						pendingGroups.add(child);
+				}
+			}
+		} finally {
+			ctx.close ();
+		}
+	}
+
+	public void startGroupRecertification(RecertificationProcessEntity rpe,
+			SecureInterpreter i, NameSpace ns, RecertifiedGroupEntity rge)
+			throws InternalErrorException, UtilEvalError, Exception {
+		String filterScript = rpe.getTemplate().getFilterScript();
+		
+		log.info("Starting recertification for group "+rge.getGroup().getName());
+		boolean any = false;
+
+		for (UserEntity ue: rge.getGroup().getPrimaryGroupUsers())
+		{
+			if ("S".equals(ue.getActive())) //$NON-NLS-1$
+			{
+				// Test if this user has any role on the applied Information Systems.
+				Collection<RoleAccount> grants = getRecertifiedRoles (ue, rpe);
+				if (filterScript != null && ! filterScript.trim().isEmpty())
+				{
+					for (Iterator<RoleAccount> iterator = grants.iterator(); iterator.hasNext();)
+					{
+						RoleAccount grant = iterator.next();
+						Modifiers m = new Modifiers();
+						ns.setTypedVariable("grant", RoleAccount.class, grant, new Modifiers());
+						Object skip = eval(i, filterScript);
+						if ( Boolean.FALSE.equals(skip))
+							iterator.remove();
+					}
+				}
+				if (! grants.isEmpty())
+				{
+					any = true;
+					RecertifiedUserEntity rue = getRecertifiedUserEntityDao().newRecertifiedUserEntity();
+					rue.setActiveAccount(Boolean.TRUE);
+					rue.setCreatedOn(new Date());
+					rue.setGroup(rge);
+					rue.setStatus(ProcessStatus.ACTIVE);
+					rue.setUser(ue);
+					getRecertifiedUserEntityDao().create(rue);
+					rge.getUsers().add(rue);
+					if (rpe.getWorkflowId() != null)
+					{
+						BpmUserProcess uwp = new BpmUserProcess();
+						uwp.setUserCode(ue.getUserName());
+						uwp.setTerminated(new Boolean(true));
+						uwp.setProcessId(rpe.getWorkflowId());
+						getUserService().create(uwp);
+					}
+					for (RoleAccount grant: grants)
+					{
+						RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().newRecertifiedRoleEntity();
+						rre.setRolAccountId(grant.getId());
+						rre.setUser(rue);
+						setReviewers(rpe, rre, i, ns, grant);
+						getRecertifiedRoleEntityDao().create(rre);
+					}
+				}
+			}
+		}
+		if (any)
+		{
+			rge.setStatus(ProcessStatus.ACTIVE);
+			getRecertifiedGroupEntityDao().update(rge);
+		} else {
+			getRecertifiedGroupEntityDao().remove(rge);
+		}
+	}
+
+	public void setReviewers(RecertificationProcessEntity rpe, RecertifiedRoleEntity rre, SecureInterpreter i,
+			NameSpace ns, RoleAccount grant) throws UtilEvalError, Exception {
+		ns.setTypedVariable("grant", RoleAccount.class, grant, new Modifiers());
+		if ( rpe.getTemplate().getStep1Script() != null && 
+				!rpe.getTemplate().getStep1Script().trim().isEmpty())
+		{
+			rre.setStep1Users( (String) eval (i, rpe.getTemplate().getStep1Script()));
+			if ( rpe.getTemplate().getStep2Script() != null && 
+					!rpe.getTemplate().getStep2Script().trim().isEmpty())
+			{
+				rre.setStep2Users( (String) eval (i, rpe.getTemplate().getStep2Script()));
+				if ( rpe.getTemplate().getStep3Script() != null && 
+						!rpe.getTemplate().getStep3Script().trim().isEmpty())
+				{
+					rre.setStep3Users( (String) eval (i, rpe.getTemplate().getStep3Script()));
+					if ( rpe.getTemplate().getStep4Script() != null && 
+							!rpe.getTemplate().getStep4Script().trim().isEmpty())
+					{
+						rre.setStep4Users( (String) eval (i, rpe.getTemplate().getStep4Script()));
+					}
+				}
+			}
+		}
+	}
+
+	public Object eval(SecureInterpreter i, String filterScript) throws Exception {
+		try {
+			return i.eval(filterScript);
+		} catch ( TargetError ex) {
+			log.warn("BSH Script error: "+ex.getMessage()+" at "+ex.getErrorSourceFile()+":"+ex.getErrorLineNumber());
+			log.warn("Stack trace: "+ex.getErrorText()+" at "+ex.getScriptStackTrace());
+			log.info(String.format(
+					Messages.getString("BSHInterpreter.BadScript"), filterScript)); //$NON-NLS-1$
+			if (ex.getTarget() instanceof Exception)
+				throw ((Exception) ex.getTarget());
+			else
+				throw ex;
 		}
 	}
 
@@ -907,36 +1035,187 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	}
 
 	@Override
-	protected RecertifiedUser handleUpdate(RecertifiedUser ru)
-			throws Exception {
-		RecertifiedUserEntityDao dao = getRecertifiedUserEntityDao();
-		RecertifiedUserEntity e = dao.load(ru.getId());
-		if (e.getStatus() == ProcessStatus.PREPARATION ||
-				e.getStatus() == ProcessStatus.ACTIVE)
-		{
-			e.setActiveAccount(ru.getActiveAccount());
-			if (ru.getBossReview() == null)
-				e.setBossReview(null);
-			else
-				e.setBossReview(ru.getBossReview().getTime());
-
-			if (ru.getAppOwnerReview() == null)
-				e.setAppOwnerReview(null);
-			else
-				e.setAppOwnerReview(ru.getAppOwnerReview().getTime());
-
-			if (ru.getCisoReview() == null)
-				e.setCisoReview(null);
-			else
-				e.setCisoReview(ru.getCisoReview().getTime());
-
-			dao.update(e);
-		} else {
-			throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NotUpdate")); //$NON-NLS-1$
-		}
-		dao.update(e);
-		return dao.toRecertifiedUser(e);
+	protected RecertificationTemplate handleCreateTemplate(RecertificationTemplate template) throws Exception {
+		RecertificationTemplateEntity entity = getRecertificationTemplateEntityDao().newRecertificationTemplateEntity();
+		getRecertificationTemplateEntityDao().recertificationTemplateToEntity(template, entity, true);
+		
+		getRecertificationTemplateEntityDao().create(entity);
+		
+		return getRecertificationTemplateEntityDao().toRecertificationTemplate(entity);
 	}
 
+	@Override
+	protected RecertificationTemplate handleUpdateTemplate(RecertificationTemplate template) throws Exception {
+		RecertificationTemplateEntity entity = getRecertificationTemplateEntityDao().load(template.getId());
+		if (entity == null)
+			throw new InternalErrorException ("Template "+template.getId()+" does not exist");
+		getRecertificationTemplateEntityDao().recertificationTemplateToEntity(template, entity, true);
+		
+		getRecertificationTemplateEntityDao().create(entity);
+		
+		return getRecertificationTemplateEntityDao().toRecertificationTemplate(entity);
+	}
+
+	@Override
+	protected List<RecertificationTemplate> handleFindTemplates() throws Exception {
+		List<RecertificationTemplateEntity> entities = getRecertificationTemplateEntityDao().loadAll();
+		List<RecertificationTemplate> l = getRecertificationTemplateEntityDao().toRecertificationTemplateList(entities);
+		l.sort(new Comparator<RecertificationTemplate>() {
+			@Override
+			public int compare(RecertificationTemplate o1, RecertificationTemplate o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
+		return l;
+	}
+
+	@Override
+	protected List<RecertifiedRole> handleGetRecertifiedRoles(RecertificationProcess rp) throws Exception {
+		Collection<RecertifiedRoleEntity> roles = getRecertifiedRoleEntityDao().findByProcessId(rp.getId());
+		LinkedList<RecertifiedRole> result = new LinkedList<RecertifiedRole>( getRecertifiedRoleEntityDao().toRecertifiedRoleList(roles));
+		Collections.sort(result, new Comparator<RecertifiedRole>() {
+			@Override
+			public int compare(RecertifiedRole o1, RecertifiedRole o2) {
+				if (o1.getRol() == null && o2.getRol() == null)
+					return 0;
+				else if (o1.getRol() == null)
+					return 1;
+				else if (o2.getRol() == null)
+					return -1;
+				int i = o1.getRol().getGroupDescription().compareTo(o2.getRol().getGroupDescription());
+				if (i == 0)
+					i = o1.getRol().getUserFullName().compareTo(o2.getRol().getUserFullName());
+				if (i == 0)
+					i = o1.getRol().getRoleDescription().compareTo(o2.getRol().getRoleDescription());
+				return i;
+			}
+		});
+		return result;
+	}
+
+	@Override
+	protected void handleDeleteTemplate(RecertificationTemplate template) throws Exception {
+		RecertificationTemplateEntity entity = getRecertificationTemplateEntityDao().load(template.getId());
+		if (entity == null)
+			throw new InternalErrorException ("Template "+template.getId()+" does not exist");
+		getRecertificationTemplateEntityDao().recertificationTemplateToEntity(template, entity, true);
+		
+		getRecertificationTemplateEntityDao().remove(entity);
+	}
+
+	@Override
+	protected List<RecertifiedRole> handleGetPendingRecertifiedRoles(RecertificationProcess rp) throws Exception {
+		Collection<RecertifiedRoleEntity> roles = getRecertifiedRoleEntityDao().findByProcessId(rp.getId());
+		LinkedList<RecertifiedRole> result = new LinkedList<RecertifiedRole>( getRecertifiedRoleEntityDao().toRecertifiedRoleList(roles));
+		for (Iterator<RecertifiedRole> it = result.iterator(); it.hasNext();)
+		{
+			RecertifiedRole rre = it.next();
+			boolean discard = true;
+			if (rre.getRol() == null)
+			{
+				discard = true;
+			}
+			else if (rre.getCheck1() == null)
+			{
+				if (isValidToCheck (rre.getStep1Users() ))
+					discard = false;
+			}
+			else if (rre.getCheck2() == null)
+			{
+				if (isValidToCheck (rre.getStep2Users() ))
+					discard = false;
+			}
+			else if (rre.getCheck3() == null)
+			{
+				if (isValidToCheck (rre.getStep3Users() ))
+					discard = false;
+			}
+			else if (rre.getCheck4() == null)
+			{
+				if (isValidToCheck (rre.getStep4Users() ))
+					discard = false;
+			}
+			if (discard)
+				it.remove();
+		}
+		Collections.sort(result, new Comparator<RecertifiedRole>() {
+			@Override
+			public int compare(RecertifiedRole o1, RecertifiedRole o2) {
+				int i = (o1.getRol().getGroupDescription() == null ? "": o1.getRol().getGroupDescription()).
+						compareTo(o2.getRol().getGroupDescription() == null ? "": o2.getRol().getGroupDescription());
+				if (i == 0)
+					i = o1.getRol().getUserFullName().compareTo(o2.getRol().getUserFullName());
+				if (i == 0)
+					i = o1.getRol().getRoleDescription().compareTo(o2.getRol().getRoleDescription());
+				return i;
+			}
+		});
+		return result;
+	}
+
+	@Override
+	protected List<String> handleGetUsersToNotify(RecertificationProcess rp) throws Exception {
+		Set<String> s = new HashSet<String>();
+		for (RecertifiedRoleEntity role: getRecertifiedRoleEntityDao().findByProcessId(rp.getId()))
+		{
+			String r = role.getCheck1() == null ? role.getStep1Users() :
+				role.getCheck2() == null ? role.getStep2Users() :
+				role.getCheck3() == null ? role.getStep3Users() :
+				role.getCheck4() == null ? role.getStep4Users():
+				null;
+			if ( r != null && ! r.trim().isEmpty())
+			{
+				for ( String rr: r.split(" +"))
+					s.add (rr);
+			}
+		}
+		return new LinkedList<String> (s);
+	}
+
+	@Override
+	protected void handleNotifyUsers(RecertificationProcess rp, String url) throws Exception {
+		RecertificationProcessEntity proc = getRecertificationProcessEntityDao().load(rp.getId());
+		String msg = proc.getTemplate().getMessage();
+		
+		for ( String s: handleGetUsersToNotify(rp))
+		{
+			VariableResolver pResolver = new CustomVariableResolver (s, url);
+			ExpressionEvaluatorImpl ee = new ExpressionEvaluatorImpl();
+			FunctionMapper functions  = null;
+			String txt = (String) ee.evaluate(msg, String.class, pResolver , functions);
+					
+			if (msg.contains("<"))
+				getMailService().sendHtmlMailToActors(new String[] {s}, rp.getName(), txt);
+			else
+				getMailService().sendTextMailToActors(new String[] {s}, rp.getName(), txt);
+		}
+	}
+
+	@Override
+	protected void handleDelegate(RecertifiedRole rr, String users) throws Exception {
+		RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().load(rr.getId());
+		com.soffid.iam.common.security.SoffidPrincipal p = Security.getSoffidPrincipal();
+		if (rre.getCheck1() == null)
+		{
+			if (rre.getStep1Users() != null)
+				rre.setStep1Users(users);
+		}
+		else if (rre.getCheck2() == null)
+		{
+			if (rre.getStep2Users() != null)
+				rre.setStep2Users(users);
+		}
+		else if (rre.getCheck3() == null)
+		{
+			if (rre.getStep3Users() != null)
+				rre.setStep3Users(users);
+		}
+		else if (rre.getCheck4() == null)
+		{
+			if (rre.getStep4Users() != null)
+				rre.setStep4Users(users);
+		}
+		getRecertifiedRoleEntityDao().update(rre);
+	}
 }
 

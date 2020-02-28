@@ -17,6 +17,7 @@ import org.jbpm.graph.exe.ExecutionContext;
 import com.soffid.iam.addons.recertification.Constants;
 import com.soffid.iam.addons.recertification.common.ProcessStatus;
 import com.soffid.iam.addons.recertification.common.RecertificationProcess;
+import com.soffid.iam.addons.recertification.common.RecertificationTemplate;
 import com.soffid.iam.addons.recertification.common.RecertificationType;
 import com.soffid.iam.addons.recertification.core.ejb.RecertificationService;
 import com.soffid.iam.addons.recertification.core.ejb.RecertificationServiceHome;
@@ -56,10 +57,17 @@ public class CreateRecertificationProcessHandler implements ActionHandler
 		newRecertProcess.setCisoRole("SOFFID_CISO");
 		newRecertProcess.setUserReview(false);
 		newRecertProcess.setType(RecertificationType.ENTITLEMENTS);
+		for ( RecertificationTemplate t: ejb.findTemplates()) 
+		{
+			newRecertProcess.setTemplate(t.getName());
+			break;
+		}
 
 		newRecertProcess = ejb.create(newRecertProcess);
 		
 		executionContext.setVariable(Constants.RECERTIFICATION_ID_VAR, newRecertProcess.getId());
 		executionContext.setVariable(Constants.USER_REVIEW_VAR, Boolean.TRUE);
+		
+//		executionContext.leaveNode();
 	}
 }

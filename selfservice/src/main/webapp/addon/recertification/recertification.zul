@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?page id="recertificationInfo" title="Recertification info"
+	contentType="text/html;charset=UTF-8"?>
+<?taglib uri="/WEB-INF/tld/web/core.dsp.tld" prefix="c" ?>
+<?component name="input_criteri" macro-uri="/comu/input_criteri.zul"?>
+<?component name="input_dada" macro-uri="/comu/input_dada.zul"?>
+<?component name="input_criteri_data" macro-uri="/comu/input_criteri_data.zul"?>
+<?component name="input_etiqueta" macro-uri="/comu/input_etiqueta.zul"?>
+
+<frame xmlns:h="http://www.w3.org/1999/xhtml">
+
+	<style>
+		/* Customize the label (the container) */ 
+		.custom-checkbox {
+			display: inline-block; position: relative; padding-left: 35px;
+			margin-bottom: 12px; cursor: pointer; font-size: 22px;
+			height: 18px; -webkit-user-select: none; 
+			-moz-user-select: none; -ms-user-select: none; user-select: none; 
+		}
+
+		/* Hide the browser's default checkbox */ 
+		.custom-checkbox input { 
+			position: absolute; opacity: 0; cursor: pointer;
+			height: 0; width: 0; 
+		}
+
+		/* Create a custom checkbox */ 
+		.custom-checkbox > label {
+			position: absolute; top: 0; left: 0; height: 25px; width: 25px; background-color: #eee; 
+		}
+
+		/* On mouse-over, add a grey background color */
+		.custom-checkbox:hover input ~ label 
+		{
+			background-color: #ccc; 
+			display: block;
+		}
+
+		.custom-checkbox-red:hover input ~ label {
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wQOFBgWJLs02wAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAA/ElEQVQ4y43TQUoDQRCF4S9eQDdCmGyMxIAaQw6QrV5WvICokEWIoCAICSFugwuvIKibamya6WhD0Yuqv/pVzRt+zzlu0Fc/+7jHRZk4wTu+Ma80OcA6arYY5y8n+CvuBwwyuItV5FK8YSpk53C6b0PJMV4LOMWdKJpXmlxjWYEfMUkS+yG7rUlbPGFULmkQsv+CXzAMplM26YfsGjxDkwN7RYMOznb44BSftWR3x7bz2JQqkklW/4BTLNHL7bneMfNHJfeMI+Ht2rYbHIbstpqF+DG2Ld95mI3YtBhqg6tUMA5vJ4eNWpbcC9kJviwLpuHtSc0kMfMie7nzAzAUjZ0bw7t3AAAAAElFTkSuQmCC);
+   			background-repeat: no-repeat;
+   			background-position: center;
+   		}
+
+		.custom-checkbox-green:hover input ~ label { 
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAYAAACALL/6AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wocEDI7TCYtLwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAyklEQVQY043RMYqDUBDG8f/IY5EYXmcVCKS0SA7gGexyk4U9yTZbBxb2ACFlukgwoIhCqlTWbmEjwoOXQmITI5ny4zfFfCNf/z9MzUw++HS2tmkasixDvYO11mitAXDewY+p67pfiIrARkVgp3Ce5/wuz6KiIrBhGPZpjD1ubvIKA0jbttZ1XQCMMXRdh+d5oxjASZIEYwwASqlJDODs11eJ4/jp6LIsn/DQ0n59lTRNh7CqKnaLk4y1N/zhb3URUqzv+3zPD/Kq7jsrRlP0CTOLEAAAAABJRU5ErkJggg==);
+   			background-repeat: no-repeat;
+   			background-position: center;
+		}
+
+		/* When the checkbox is checked, add a blue background */
+		.custom-checkbox-green input:checked ~ label {
+			background-color: lightgreen; 
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAYAAACALL/6AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wocEDI7TCYtLwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAyklEQVQY043RMYqDUBDG8f/IY5EYXmcVCKS0SA7gGexyk4U9yTZbBxb2ACFlukgwoIhCqlTWbmEjwoOXQmITI5ny4zfFfCNf/z9MzUw++HS2tmkasixDvYO11mitAXDewY+p67pfiIrARkVgp3Ce5/wuz6KiIrBhGPZpjD1ubvIKA0jbttZ1XQCMMXRdh+d5oxjASZIEYwwASqlJDODs11eJ4/jp6LIsn/DQ0n59lTRNh7CqKnaLk4y1N/zhb3URUqzv+3zPD/Kq7jsrRlP0CTOLEAAAAABJRU5ErkJggg==);
+   			background-repeat: no-repeat;
+   			background-position: center;
+		}
+
+		/* When the checkbox is checked, add a blue background */
+		.custom-checkbox-red input:checked ~ label {
+			background-color: #e00000; 
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wQOFBgWJLs02wAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAA/ElEQVQ4y43TQUoDQRCF4S9eQDdCmGyMxIAaQw6QrV5WvICokEWIoCAICSFugwuvIKibamya6WhD0Yuqv/pVzRt+zzlu0Fc/+7jHRZk4wTu+Ma80OcA6arYY5y8n+CvuBwwyuItV5FK8YSpk53C6b0PJMV4LOMWdKJpXmlxjWYEfMUkS+yG7rUlbPGFULmkQsv+CXzAMplM26YfsGjxDkwN7RYMOznb44BSftWR3x7bz2JQqkklW/4BTLNHL7bneMfNHJfeMI+Ht2rYbHIbstpqF+DG2Ld95mI3YtBhqg6tUMA5vJ4eNWpbcC9kJviwLpuHtSc0kMfMie7nzAzAUjZ0bw7t3AAAAAElFTkSuQmCC);
+   			background-repeat: no-repeat;
+   			background-position: center;
+   		}
+
+		/* Create the checkmark/indicator (hidden when not checked) */
+		.custom-checkbox label:after { 
+			content: ""; position: absolute; display: none; 
+		}
+
+		span.link:hover {
+			text-decoration: underline;
+			cursor: pointer;
+		}
+	</style>
+	
+	<datamodel id="model" rootNode="root"
+		src="addon/recertification/descriptorSelfServiceRecertification.xml" />
+
+	<zscript>
+		<![CDATA[
+			import java.util.Map;
+			import com.soffid.iam.addons.recertification.common.*;
+			
+			Long processId = arg.get("id");
+
+			boolean showRoles = false;
+			boolean showProcesses = false;
+			
+			if (processId != null)
+			{
+				model.getJXPathContext().getVariables().declareVariable("id", processId);
+				showRoles = true;
+			}
+			try
+			
+			{
+				es.caib.zkib.zkiblaf.Application.setTitle(org.zkoss.util.resource
+						.Labels.getLabel("recertification.title"));
+			}
+			catch (Exception ex) {}
+			
+			void selectProcess(Event event) {
+				processId = es.caib.zkib.datasource.XPathUtils.getValue(event.getTarget(), "id");
+				if (processId != null)
+				{
+					model.getJXPathContext().getVariables().declareVariable("id", processId);
+					model.getJXPathContext().getValue("/process").refresh();
+					rolesDiv.visible = true;
+				}
+			}
+
+			void delegate () {
+				if (! rolesGrid.getSelectedItems().isEmpty())
+				{
+					Page p = desktop.getPage("identity");
+					p.setVariable("types",
+								new com.soffid.iam.web.component.Identity.Type[] {
+										com.soffid.iam.web.component.Identity.Type.USER
+								}
+							);
+					p.setVariable("title", org.zkoss.util.resource.Labels.getLabel("seleccionUsuario.btnDelegar"));
+					p.setVariable("invoker", delegateButton);
+					Events.sendEvent(new Event("onDisplay", p.getFellow("identityWindow")));
+				}
+			}
+			void delegate2(List identities) {
+				StringBuffer sb = new StringBuffer();
+				for (com.soffid.iam.web.component.Identity id: identities)
+				{
+					if (sb.length() > 0) sb .append(" ");
+					com.soffid.iam.api.User user = id.getObject();
+					sb.append (user.userName);
+				}
+				com.soffid.iam.addons.recertification.core.ejb.RecertificationService ejb =
+						new javax.naming.InitialContext()
+						.lookup (com.soffid.iam.addons.recertification.core.ejb.RecertificationServiceHome.JNDI_NAME);
+				if ( sb.length() > 0)
+				{
+					for (item: rolesGrid.getSelectedItems())
+					{
+						RecertifiedRole rr = item.getValue().getInstance();
+						ejb.delegate(rr, sb.toString());
+					}
+				}
+				es.caib.zkib.binder.BindContext ctx = es.caib.zkib.datasource.XPathUtils.getComponentContext(rolesGrid);
+				es.caib.zkib.datasource.XPathUtils.getValue(ctx.getDataSource(), ctx.getXPath()).refresh();
+			}
+		]]>
+	</zscript>
+
+	
+	<label value = "${c:l('recertification.process') }" style="font-size: large "/>
+	<grid dataPath="/model:/process" width="100%" fixedLayout="true">
+		<columns>
+		</columns>
+		<datarow>
+			<label bind="@name"  onClick="selectProcess(event)" sclass="link"/>
+		</datarow>
+	</grid>
+	
+	
+	<div id="rolesDiv" visible="${showRoles }" style="margin-top:32px">
+		<toolbar style="border-top:0.1px solid white;">
+			<toolbarbutton label="${c:l('seleccionUsuario.btnDelegar') }" onClick="delegate()" id="delegateButton" 
+										onIdentity="delegate2(event.data)"/>
+			<listexporttoolbarbutton acces="true"
+				listbox="/rolesGrid" />
+			<commitbutton datamodel="/model" id="btcommit"/>
+			<undobutton datamodel="/model"/>
+		</toolbar>
+		<listbox id="rolesGrid" dataPath="/model:/process[1]/role" mold="paging" pageSize="30" fixedLayout="true"
+			checkmark="true" multiple="true">
+			<listhead>
+				<listheader label="${c:l('recertification.Group') }" sort="auto">
+					<textboxfilter bind="rol/groupDescription"  style="display: block"/>
+				</listheader>
+				<listheader label="${c:l('recertification.User') }" sort="auto">
+					<textboxfilter bind="rol/userFullName"  style="display: block"/>
+				</listheader>
+				<listheader label="${c:l('recertification.entitlement') }" sort="auto">
+					<textboxfilter bind="rol/rolDescription" style="display: block"/>
+				</listheader>
+				<listheader label="${c:l('recertification.previousEndorsement') }" sort="auto"/>
+				<listheader label="${c:l('recertification.action') }" width="96px" sort="auto"/>
+			</listhead>
+			<dataitem bind=".">
+				<listcell bind="rol/groupDescription"></listcell>
+				<listcell bind="rol/userFullName">
+					<imageclic src="/img/link.png">
+						<attribute name="onClick"><![CDATA[
+                           		Executions.getCurrent().sendRedirect(
+                           			"index.zul?embed&target=/usuaris.zul?user="+
+                           				es.caib.zkib.datasource.XPathUtils.getValue(
+                          						es.caib.zkib.datasource.XPathUtils.getComponentContext(self),
+                          						"rol/userCode"),
+                          				"soffid_popup");
+						]]>
+						</attribute>
+					</imageclic>
+				</listcell>
+				<listcell bind="rol/roleDescription"></listcell>
+				<listcell>
+					<listener use="com.soffid.iam.addons.recertification.web.UsersListcell"/>
+				</listcell>
+				<listcell>
+					<listener use="com.soffid.iam.addons.recertification.web.CheckListcell"/>
+				</listcell>
+			</dataitem>
+		</listbox>
+	</div>
+	<include src="finestres/identity.zul" />
+</frame>

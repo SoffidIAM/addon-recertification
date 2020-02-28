@@ -8,7 +8,7 @@ package com.soffid.iam.addons.recertification.model;
 import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
-@Entity (table="SCR_RECGRO" )
+@Entity (table="SCV_RECGRO" )
 @Depends ({com.soffid.iam.addons.recertification.common.RecertifiedGroup.class,
 	com.soffid.iam.addons.recertification.model.RecertificationProcessEntity.class,
 	com.soffid.iam.addons.recertification.model.RecertifiedUserEntity.class,
@@ -21,7 +21,6 @@ public abstract class RecertifiedGroupEntity {
 	public java.lang.Long id;
 
 	@Column (name="RGR_TEN_ID")
-	@Nullable
 	TenantEntity tenant;
 
 	@Column (name="RGR_STATUS")
@@ -38,6 +37,7 @@ public abstract class RecertifiedGroupEntity {
 	public es.caib.seycon.ng.model.GrupEntity group;
 
 	@Column (name="RGR_MNGROL")
+	@Nullable
 	public java.lang.String managerRole;
 
 	@Column (name="RGR_WROKID")

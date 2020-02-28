@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<zkib-model>
+	<datanode name="root">
+		<finder name="query" type="query">
+			<script-finder>
+				import com.soffid.iam.addons.recertification.common.*;
+				criteria = new RecertificationProcessCriteria();
+				criteria.status = ProcessStatus.ACTIVE;
+				return criteria;
+			</script-finder>
+		</finder>
+
+		<finder name="process" type="process">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertificationProcess" if="${id != null}">
+				<parameter value="${id}" />
+			</ejb-finder>
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="findRecertificationProcesses" if="${id == null}">
+				<parameter value="${self.query[0].instance}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+
+	<datanode name="process">
+		<finder name="role" type="role" refreshAfterCommit="true">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getPendingRecertifiedRoles">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+
+	<datanode name="role">
+		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
+			<update-method method="check">
+				<parameter value="${instance}" />
+				<parameter value="${instance.check}" />
+			</update-method>
+		</ejb-handler>
+	</datanode>
+
+	<datanode name="query" transient="true"/>
+	
+</zkib-model>

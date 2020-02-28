@@ -32,6 +32,44 @@
 				return statusList;
 			</script-finder>
 		</finder>
+
+		<finder name="processType" type="processType">
+			<script-finder>
+				import com.soffid.iam.addons.recertification.common.*;
+				statusList = new java.util.LinkedList();
+				
+				statusList.add(RecertificationType.ENTITLEMENTS);
+				statusList.add(RecertificationType.ACCOUNTS);
+				statusList.add(RecertificationType.ROLEDEFINITIONS);
+
+				return statusList;
+			</script-finder>
+		</finder>
+
+		<finder name="template" type="template">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="findTemplates" >
+			</ejb-finder>
+			<new-instance-bean className="com.soffid.iam.addons.recertification.common.RecertificationTemplate">
+			</new-instance-bean>
+		</finder>
+		
+
+	</datanode>
+
+	<datanode name="template">
+		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
+			<insert-method method="createTemplate" returnBean="true" >  <!-- user:create -->
+				<parameter value="${instance}"/>
+			</insert-method>
+			<delete-method method="deleteTemplate">    
+				<parameter value="${instance}" />
+			</delete-method>
+			<update-method method="updateTemplate"> <!-- user:update -->
+				<parameter value="${instance}" />
+			</update-method>
+		</ejb-handler>
 	</datanode>
 
 	<datanode name="process">
@@ -47,6 +85,14 @@
 			<ejb-finder
 				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="getRecertifiedInformationSystems">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
+		
+		<finder name="role" type="role">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedRoles">
 				<parameter value="${instance}" />
 			</ejb-finder>
 		</finder>
@@ -70,6 +116,8 @@
 		</custom-attribute>
 	</datanode>
 
+	<datanode name="role" transient="true">
+	</datanode>
 	<datanode name="group">
 		<finder name="users" type="users">
 			<ejb-finder
@@ -147,7 +195,8 @@
 	</datanode>
 	
 	<datanode name="roles" />
-	<datanode name="processStatus">
+	
+	<datanode name="processStatus" transient="true">
 		<custom-attribute name="literal">
 			import com.soffid.iam.addons.recertification.common.*;
 			
@@ -170,4 +219,15 @@
 				return com.soffid.iam.addons.recertification.common.ProcessStatus.fromString(instance.getValue());
 		</custom-attribute>
 	</datanode>
+
+	<datanode name="processType" transient="true">
+		<custom-attribute name="literal">
+			import com.soffid.iam.addons.recertification.common.*;
+			return org.zkoss.util.resource.Labels.getLabel("recertification.type."+ instance.getValue());
+		</custom-attribute>
+		<custom-attribute name="value">
+			return com.soffid.iam.addons.recertification.common.RecertificationType.fromString(instance.getValue());
+		</custom-attribute>
+	</datanode>
+
 </zkib-model>

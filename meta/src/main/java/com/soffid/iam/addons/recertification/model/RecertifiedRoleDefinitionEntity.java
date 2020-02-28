@@ -8,7 +8,7 @@ package com.soffid.iam.addons.recertification.model;
 import com.soffid.iam.model.TenantEntity;
 import com.soffid.mda.annotation.*;
 
-@Entity (table="SCR_RECROD" )
+@Entity (table="SCV_RECROD" )
 @Depends ({com.soffid.iam.addons.recertification.common.RecertifiedRoleDefinition.class,
 	es.caib.seycon.ng.model.RolEntity.class})
 public abstract class RecertifiedRoleDefinitionEntity {
@@ -19,7 +19,6 @@ public abstract class RecertifiedRoleDefinitionEntity {
 	public java.lang.Long id;
 
 	@Column (name="RRD_TEN_ID")
-	@Nullable
 	TenantEntity tenant;
 	
 	@Column (name="RRD_RIS_ID")

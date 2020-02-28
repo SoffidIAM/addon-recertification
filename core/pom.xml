@@ -243,9 +243,8 @@
 		<dependency>
 			<groupId>com.soffid.iam.console</groupId>
 			<artifactId>iam-core</artifactId>
-			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">2.0.0-M1</version>
+			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">${console.version}</version>
 			<scope>provided</scope>
-			<type>ejb</type>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomee</groupId>

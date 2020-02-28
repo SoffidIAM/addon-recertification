@@ -8,6 +8,12 @@
 				<parameter value="${processId}" />
 			</ejb-finder>
 		</finder>
+		<finder name="template" type="template">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="findTemplates" >
+			</ejb-finder>
+		</finder>
 	</datanode>
 	
 	<datanode name="process">
@@ -60,4 +66,7 @@
 			</update-method>
 		</ejb-handler>
 	</datanode>
+	
+	<datanode name="template" transient="true"/>
+	
 </zkib-model>

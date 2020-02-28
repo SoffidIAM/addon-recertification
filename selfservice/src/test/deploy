@@ -1,0 +1,5 @@
+#!/bin/bash
+cp -vru /home/gbuades/soffid/addon-recertification/selfservice/src/main/webapp/* /home/gbuades/soffid-2.0/test/iam-console-2/work/soffid/iam-ear.ear/selfservice-*/
+cp -vru /home/gbuades/soffid/addon-recertification/selfservice/target/classes/* /home/gbuades/soffid-2.0/test/iam-console-2/work/soffid/iam-ear.ear/selfservice-*/WEB-INF/classes
+cp -vru /home/gbuades/soffid/addon-recertification/selfservice/src/main/resources/* /home/gbuades/soffid-2.0/test/iam-console-2/work/soffid/iam-ear.ear/selfservice-*/WEB-INF/classes
+

@@ -7,7 +7,74 @@
 <?component name="input_criteri_data" macro-uri="/comu/input_criteri_data.zul"?>
 <?component name="input_etiqueta" macro-uri="/comu/input_etiqueta.zul"?>
 
-<zk xmlns:h="http://www.w3.org/1999/xhtml">
+<frame xmlns:h="http://www.w3.org/1999/xhtml">
+
+	<style>
+		/* Customize the label (the container) */ 
+		.custom-checkbox {
+			display: inline-block; position: relative; padding-left: 35px;
+			margin-bottom: 12px; cursor: pointer; font-size: 22px;
+			height: 18px; -webkit-user-select: none; 
+			-moz-user-select: none; -ms-user-select: none; user-select: none; 
+		}
+
+		/* Hide the browser's default checkbox */ 
+		.custom-checkbox input { 
+			position: absolute; opacity: 0; cursor: pointer;
+			height: 0; width: 0; 
+		}
+
+		/* Create a custom checkbox */ 
+		.custom-checkbox > label {
+			position: absolute; top: 0; left: 0; height: 25px; width: 25px; background-color: #eee; 
+		}
+
+		/* On mouse-over, add a grey background color */
+		.custom-checkbox:hover input ~ label 
+		{
+			background-color: #ccc; 
+			display: block;
+		}
+
+		.custom-checkbox-red:hover input ~ label {
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wQOFBgWJLs02wAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAA/ElEQVQ4y43TQUoDQRCF4S9eQDdCmGyMxIAaQw6QrV5WvICokEWIoCAICSFugwuvIKibamya6WhD0Yuqv/pVzRt+zzlu0Fc/+7jHRZk4wTu+Ma80OcA6arYY5y8n+CvuBwwyuItV5FK8YSpk53C6b0PJMV4LOMWdKJpXmlxjWYEfMUkS+yG7rUlbPGFULmkQsv+CXzAMplM26YfsGjxDkwN7RYMOznb44BSftWR3x7bz2JQqkklW/4BTLNHL7bneMfNHJfeMI+Ht2rYbHIbstpqF+DG2Ld95mI3YtBhqg6tUMA5vJ4eNWpbcC9kJviwLpuHtSc0kMfMie7nzAzAUjZ0bw7t3AAAAAElFTkSuQmCC);
+   			background-repeat: no-repeat;
+   			background-position: center;
+   		}
+
+		.custom-checkbox-green:hover input ~ label { 
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAYAAACALL/6AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wocEDI7TCYtLwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAyklEQVQY043RMYqDUBDG8f/IY5EYXmcVCKS0SA7gGexyk4U9yTZbBxb2ACFlukgwoIhCqlTWbmEjwoOXQmITI5ny4zfFfCNf/z9MzUw++HS2tmkasixDvYO11mitAXDewY+p67pfiIrARkVgp3Ce5/wuz6KiIrBhGPZpjD1ubvIKA0jbttZ1XQCMMXRdh+d5oxjASZIEYwwASqlJDODs11eJ4/jp6LIsn/DQ0n59lTRNh7CqKnaLk4y1N/zhb3URUqzv+3zPD/Kq7jsrRlP0CTOLEAAAAABJRU5ErkJggg==);
+   			background-repeat: no-repeat;
+   			background-position: center;
+		}
+
+		/* When the checkbox is checked, add a blue background */
+		.custom-checkbox-green input:checked ~ label {
+			background-color: lightgreen; 
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAKCAYAAACALL/6AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wocEDI7TCYtLwAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAyklEQVQY043RMYqDUBDG8f/IY5EYXmcVCKS0SA7gGexyk4U9yTZbBxb2ACFlukgwoIhCqlTWbmEjwoOXQmITI5ny4zfFfCNf/z9MzUw++HS2tmkasixDvYO11mitAXDewY+p67pfiIrARkVgp3Ce5/wuz6KiIrBhGPZpjD1ubvIKA0jbttZ1XQCMMXRdh+d5oxjASZIEYwwASqlJDODs11eJ4/jp6LIsn/DQ0n59lTRNh7CqKnaLk4y1N/zhb3URUqzv+3zPD/Kq7jsrRlP0CTOLEAAAAABJRU5ErkJggg==);
+   			background-repeat: no-repeat;
+   			background-position: center;
+		}
+
+		/* When the checkbox is checked, add a blue background */
+		.custom-checkbox-red input:checked ~ label {
+			background-color: #e00000; 
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4wQOFBgWJLs02wAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAA/ElEQVQ4y43TQUoDQRCF4S9eQDdCmGyMxIAaQw6QrV5WvICokEWIoCAICSFugwuvIKibamya6WhD0Yuqv/pVzRt+zzlu0Fc/+7jHRZk4wTu+Ma80OcA6arYY5y8n+CvuBwwyuItV5FK8YSpk53C6b0PJMV4LOMWdKJpXmlxjWYEfMUkS+yG7rUlbPGFULmkQsv+CXzAMplM26YfsGjxDkwN7RYMOznb44BSftWR3x7bz2JQqkklW/4BTLNHL7bneMfNHJfeMI+Ht2rYbHIbstpqF+DG2Ld95mI3YtBhqg6tUMA5vJ4eNWpbcC9kJviwLpuHtSc0kMfMie7nzAzAUjZ0bw7t3AAAAAElFTkSuQmCC);
+   			background-repeat: no-repeat;
+   			background-position: center;
+   		}
+
+		/* Create the checkmark/indicator (hidden when not checked) */
+		.custom-checkbox label:after { 
+			content: ""; position: absolute; display: none; 
+		}
+
+		span.link:hover {
+			text-decoration: underline;
+			cursor: pointer;
+		}
+	</style>
+	
 
 	<zscript src="/comu/netejaCriteris.zul" />
 	<zscript src="/comu/checkTruncatedResults.zul" />
@@ -19,6 +86,11 @@
 		<![CDATA[
 			import com.soffid.iam.addons.recertification.common.*;
 			
+			String scriptVars = "{\"serviceLocator\":\"com.soffid.iam.ServiceLocator\","+
+				"\"account\":\"com.soffid.iam.api.Account\","+
+				"\"role\":\"com.soffid.iam.api.Role\","+
+				"\"grant\":\"com.soffid.iam.api.RoleAccount\"}";
+				
 			fileres = es.caib.seycon.ng.web.Custom.FILERES;
 			fileresO = es.caib.seycon.ng.web.Custom.FILERES_OBRIR;
 			
@@ -109,8 +181,7 @@
 				if (!retrySearch)
 				{
 					criteria.setFromDate(criteria.getFromDate());
-					criteria.setGroup(es.caib.seycon.ng.web.utils.Autowildcards
-							.replaceAsteriskChar(criteria.getGroup()));
+					criteria.setGroup((criteria.getGroup()));
 					criteria.setInformationSystem(es.caib.seycon.ng.web.utils.Autowildcards
 							.replaceAsteriskChar(criteria.getInformationSystem()));
 					criteria.setName(es.caib.seycon.ng.web.utils.Autowildcards
@@ -122,8 +193,7 @@
 				else
 				{
 					criteria.setFromDate(criteria.getFromDate());
-					criteria.setGroup(es.caib.seycon.ng.web.utils.Autowildcards
-							.addPercentChar(criteria.getGroup()));
+					criteria.setGroup(criteria.getGroup());
 					criteria.setInformationSystem(es.caib.seycon.ng.web.utils.Autowildcards
 							.addPercentChar(criteria.getInformationSystem()));
 					criteria.setName(es.caib.seycon.ng.web.utils.Autowildcards
@@ -221,157 +291,375 @@
 						.getFellow("listboxGroups").setRows(5);
 //				esquema.showFormulari();
 			}
+			
+			void openEditor ( Event event) {
+			    Events.sendEvent(new Event ("onEdit", 
+			    		desktop.getPage("editor").getFellow("top"),
+			    		new Object[] {
+							    event.getTarget().getPreviousSibling(),
+							    scriptVars
+						}
+			    ));
+
+			}
+
+			void openHtmlEditor ( Event event) {
+			    Events.sendEvent(new Event ("onEdit", 
+			    		page.getFellow("top"),
+			    		new Object[] {
+							    event.getTarget().getPreviousSibling(),
+							    scriptVars
+						}
+			    ));
+
+			}
+			
+			void delegate () {
+				Listbox lb = esquema.getFellow("lista").getFellow("rolesGrid");
+				Button delegateButton = esquema.getFellow("lista").getFellow("delegateButton");
+				if (! lb.getSelectedItems().isEmpty())
+				{
+					Page p = desktop.getPage("identity");
+					p.setVariable("types",
+								new com.soffid.iam.web.component.Identity.Type[] {
+										com.soffid.iam.web.component.Identity.Type.USER
+								}
+							);
+					p.setVariable("title", org.zkoss.util.resource.Labels.getLabel("seleccionUsuario.btnDelegar"));
+					p.setVariable("invoker", delegateButton);
+					Events.sendEvent(new Event("onDisplay", p.getFellow("identityWindow")));
+				}
+			}
+			void delegate2(List identities) {
+				StringBuffer sb = new StringBuffer();
+				for (com.soffid.iam.web.component.Identity id: identities)
+				{
+					if (sb.length() > 0) sb .append(" ");
+					User user = id.getObject();
+					sb.apped (user.userName);
+				}
+				
+				com.soffid.iam.addons.recertification.core.ejb.RecertificationService ejb =
+						new javax.naming.InitialContext()
+						.lookup (com.soffid.iam.addons.recertification.core.ejb.RecertificationServiceHome.JNDI_NAME);
+				if ( sb.length() > 0)
+				{
+					Listbox rolesGrid = esquema.getFellow("lista").getFellow("rolesGrid");
+					for (item: rolesGrid.getSelectedItems())
+					{
+						RecertifiedRole rr = item.getValue().getInstance();
+						ejb.delegate(rr, sb.toString());
+					}
+					es.caib.zkib.binder.BindContext ctx = es.caib.zkib.datasource.XPathUtils.getComponentContext(rolesGrid);
+					es.caib.zkib.datasource.XPathUtils.getValue(ctx.getDataSource(), ctx.getXPath()).refresh();
+				}
+			}
 		]]>
 	</zscript>
 
-	<esquemavertical id="esquema" datamodel="/model" focusCriteri="queryName"
-		onHideFormulari="showLista()">
-		
-		<form dataPath="/model:/query" width="100%">
-			<criteris id="queryWindow" height="${queryWindowMin}" onOK="search()"
-				width="100%">
-				<vbox>
-					<hbox>
-						<input_criteri id="queryName" etiqueta="Name" bind="@name" />
-						<input_criteri_data id="queryStartDate" format="dd/MM/yyyy HH:mm"
-							etiqueta="${c:l('recertification.StartDate')}" bind="@fromDate"/>
-						<input_criteri_data id="queryEndDate" format="dd/MM/yyyy HH:mm"
-							etiqueta="${c:l('recertification.EndDate')}" bind="@toDate" />
-						<imageclic onClick="search()" src="~./img/fletxa_cerca.gif" />
-					</hbox>
+	<tabbox>
+		<tabs>
+			<tab label="${c:l('recertification.processes') }"/>
+			<tab label="${c:l('recertification.templates') }"/>
+		</tabs>
+		<tabpanels>
+			<tabpanel>
+				<esquemavertical id="esquema" datamodel="/model" focusCriteri="queryName"
+					onHideFormulari="showLista()">
 					
-					<hbox>
-						<hbox width="250px" widths="100px, *">
-							<label style="display:inline-box" sclass="etiqueta" value="${c:l('recertification.Status')}" width="100ox"/>
-							<listbox id="queryStatus" bind="@status" mold="select"
-								width="150px" dataPath="/model:/processStatus">
-								<dataitem bind=".">
-									<listcell bind="@literal" />
-								</dataitem>
-							</listbox>
-						</hbox>
-						
-						<input_criteri id="queryGroup" etiqueta="${c:l('recertification.Group')}" bind="@group" />
-						<input_criteri id="queryApplication" etiqueta="${c:l('recertification.Application')}"
-							bind="@informationSystem" />
-					</hbox>
-				</vbox>
-			</criteris>
-		</form>
-		
-		<navegador id="lista" width="${amplaria}">
-			<listbox id="listbox" autocommit="false" dataPath="/model:/process"
-				fixedLayout="true" height="96%" onClick="showDetall()"
-				onSelect="select()" rows="${fileres}" onCreate="checkTruncatedList(self)">
-				<listhead>
-					<listheader label="${c:l('recertification.Name')}" sort="auto" />
-					<listheader label="${c:l('recertification.StartDate')}" sort="auto" width="200px"/>
-					<listheader label="${c:l('recertification.FinishDate')}" sort="auto" width="200px"/>
-					<listheader label="${c:l('recertification.Status2')}" sort="auto" />
-				</listhead>
-				<listfoot>
-					<listfooter span="3">
-						<label id="listboxFoot" style="margin-left: 10px;" />
-					</listfooter>
-				</listfoot>
-				<dataitem bind=".">
-					<listcell bind="@name" />
-					<listcell >
-						<datebox bind="@startDate" disabled="true" width="150px"
-						 sclass="dateboxread" buttonVisible="false"
-						 format="${c:l('usuaris.zul.dateFormat')}" />
-					</listcell>
-					<listcell>
-						<datebox bind="@finishDate" disabled="true" width="150px"
-						 sclass="dateboxread" buttonVisible="false"
-						 format="${c:l('usuaris.zul.dateFormat')}" />
-					</listcell>
-					<listcell bind="@statusLiteral"/>
-				</dataitem>
-			</listbox>
-		</navegador>
-		
-		<detalls id="dades" width="${amplaria}">
-			<form id="form" dataPath="/esquema/lista/listbox:/." width="99%">
-				<div>
-					<div style="width:48%; display: inline-block;  vertical-align:top; margin-right: 1%">
-						<listbox id="listboxGroups" dataPath="/esquema/lista/listbox:/group"
-							fixedLayout="true" onSelect="selectGroup()" onClick="showDetallGroups">
+					<form dataPath="/model:/query" width="100%">
+						<criteris id="queryWindow" height="${queryWindowMin}" onOK="search()"
+							width="100%">
+							<vbox>
+								<hbox>
+									<input_criteri id="queryName" etiqueta="Name" bind="@name" />
+									<input_criteri_data id="queryStartDate" format="dd/MM/yyyy HH:mm"
+										etiqueta="${c:l('recertification.StartDate')}" bind="@fromDate"/>
+									<input_criteri_data id="queryEndDate" format="dd/MM/yyyy HH:mm"
+										etiqueta="${c:l('recertification.EndDate')}" bind="@toDate" />
+									<imageclic onClick="search()" src="~./img/fletxa_cerca.gif" />
+								</hbox>
+								
+								<hbox>
+									<hbox width="250px" widths="100px, *">
+										<label style="display:inline-box" sclass="etiqueta" value="${c:l('recertification.Status')}" width="100ox"/>
+										<listbox id="queryStatus" bind="@status" mold="select"
+											width="150px" dataPath="/model:/processStatus">
+											<dataitem bind=".">
+												<listcell bind="@literal" />
+											</dataitem>
+										</listbox>
+									</hbox>
+									
+									<input_criteri id="queryGroup" etiqueta="${c:l('recertification.Group')}" bind="@group" />
+									<input_criteri id="queryApplication" etiqueta="${c:l('recertification.Application')}"
+										bind="@informationSystem" />
+								</hbox>
+							</vbox>
+						</criteris>
+					</form>
+					
+					<navegador id="lista" width="${amplaria}">
+						<listbox id="listbox" autocommit="false" dataPath="/model:/process"
+							fixedLayout="true" height="96%" onClick="showDetall()"
+							onSelect="select()" rows="${fileres}" onCreate="checkTruncatedList(self)">
 							<listhead>
-								<listheader label="${c:l('recertification.Group')}" />
-								<listheader label="${c:l('recertification.Manager')}" />
-								<listheader label="${c:l('recertification.Status2')}" />
-								<listheader label="${c:l('recertification.done')}" />
+								<listheader label="${c:l('recertification.Name')}" sort="auto" />
+								<listheader label="${c:l('recertification.StartDate')}" sort="auto" width="200px"/>
+								<listheader label="${c:l('recertification.FinishDate')}" sort="auto" width="200px"/>
+								<listheader label="${c:l('recertification.Status2')}" sort="auto" />
 							</listhead>
-							
+							<listfoot>
+								<listfooter span="3">
+									<label id="listboxFoot" style="margin-left: 10px;" />
+								</listfooter>
+							</listfoot>
 							<dataitem bind=".">
-								<listcell bind="@group" />
-								<listcell bind="@managerRole" />
-								<listcell bind="@statusLiteral" />
-								<listcell bind="@pctDone" />
+								<listcell bind="@name" />
+								<listcell >
+									<datebox bind="@startDate" disabled="true" width="150px"
+									 sclass="dateboxread" buttonVisible="false"
+									 format="${c:l('usuaris.zul.dateFormat')}" />
+								</listcell>
+								<listcell>
+									<datebox bind="@finishDate" disabled="true" width="150px"
+									 sclass="dateboxread" buttonVisible="false"
+									 format="${c:l('usuaris.zul.dateFormat')}" />
+								</listcell>
+								<listcell bind="@statusLiteral"/>
 							</dataitem>
 						</listbox>
-						<grid id="gridUsers" dataPath="/esquema/dades/listboxGroups:/users">
-							<columns>
-								<column label="${c:l('recertification.Active')}"/>
-								<column label="${c:l('recertification.User')}"/>
-								<column label="${c:l('recertification.CreationDate')}"/>
-								<column label="${c:l('recertification.Status2')}" />
-								<column label="${c:l('recertification.BossDate')}"/>
-								<column label="${c:l('recertification.AppOwnerDate')}"/>
-								<column label="${c:l('recertification.CisoDate')}"/>
-							</columns>
-							
-							<datarow>
-								<checkbox bind="@activeAccount" disabled="true"/>
-								<label bind="@user"/>
-								<datebox bind="@createdOn" disabled="true" width="110px"
-								 sclass="dateboxread" buttonVisible="false"
-								 format="${c:l('usuaris.zul.dateFormat')}" />
-								<label bind="@statusLiteral"/>
-								<datebox bind="@bossReview" disabled="true" width="110px"
-								 sclass="dateboxread" buttonVisible="false"
-								 format="${c:l('usuaris.zul.dateFormat')}" />
-								<datebox bind="@ownerReview" disabled="true" width="110px"
-								 sclass="dateboxread" buttonVisible="false"
-								 format="${c:l('usuaris.zul.dateFormat')}" />
-								<datebox bind="@cisoReview" disabled="true" width="110px"
-								 sclass="dateboxread" buttonVisible="false"
-								 format="${c:l('usuaris.zul.dateFormat')}" />
-							</datarow>
-						</grid>
-					</div>
-					<div style="width:49%; display: inline-block; vertical-align:top">
-						<listbox id="listboxIS" dataPath="/esquema/lista/listbox:/is"
-							fixedLayout="true">
-							<listhead>
-								<listheader label="${c:l('recertification.Application')}"/>
-								<listheader label="${c:l('recertification.Status2')}" />
-								<listheader label="${c:l('recertification.done')}" />
-							</listhead>
-							
-							<dataitem>
-								<listcell bind="@informationSystem"/>
-								<listcell bind="@statusLiteral" />
-								<listcell bind="@pctDone" />
+					</navegador>
+					
+					<detalls id="dades" width="${amplaria}">
+						<form id="form" dataPath="/esquema/lista/listbox:/." width="99%">
+							<div>
+								<div style="width:48%; display: inline-block;  vertical-align:top; margin-right: 1%">
+									<listbox id="listboxGroups" rows="5" dataPath="/esquema/lista/listbox:/group"
+										fixedLayout="true" onSelect="selectGroup()" onClick="showDetallGroups">
+										<listhead>
+											<listheader label="${c:l('recertification.Group')}" />
+											<listheader label="${c:l('recertification.Manager')}" />
+											<listheader label="${c:l('recertification.Status2')}" />
+											<listheader label="${c:l('recertification.done')}" />
+										</listhead>
+										
+										<dataitem bind=".">
+											<listcell bind="@group" />
+											<listcell bind="@managerRole" />
+											<listcell bind="@statusLiteral" />
+											<listcell bind="@pctDone" />
+										</dataitem>
+									</listbox>
+									<grid id="gridUsers" dataPath="/esquema/dades/listboxGroups:/users">
+										<columns>
+											<column label="${c:l('recertification.Active')}"/>
+											<column label="${c:l('recertification.User')}"/>
+											<column label="${c:l('recertification.CreationDate')}"/>
+											<column label="${c:l('recertification.Status2')}" />
+											<column label="${c:l('recertification.BossDate')}"/>
+											<column label="${c:l('recertification.AppOwnerDate')}"/>
+											<column label="${c:l('recertification.CisoDate')}"/>
+										</columns>
+										
+										<datarow>
+											<checkbox bind="@activeAccount" disabled="true"/>
+											<label bind="@user"/>
+											<datebox bind="@createdOn" disabled="true" width="110px"
+											 sclass="dateboxread" buttonVisible="false"
+											 format="${c:l('usuaris.zul.dateFormat')}" />
+											<label bind="@statusLiteral"/>
+											<datebox bind="@bossReview" disabled="true" width="110px"
+											 sclass="dateboxread" buttonVisible="false"
+											 format="${c:l('usuaris.zul.dateFormat')}" />
+											<datebox bind="@ownerReview" disabled="true" width="110px"
+											 sclass="dateboxread" buttonVisible="false"
+											 format="${c:l('usuaris.zul.dateFormat')}" />
+											<datebox bind="@cisoReview" disabled="true" width="110px"
+											 sclass="dateboxread" buttonVisible="false"
+											 format="${c:l('usuaris.zul.dateFormat')}" />
+										</datarow>
+									</grid>
+								</div>
+								<div style="width:49%; display: inline-block; vertical-align:top">
+									<listbox id="listboxIS" dataPath="/esquema/lista/listbox:/is"
+										fixedLayout="true">
+										<listhead>
+											<listheader label="${c:l('recertification.Application')}"/>
+											<listheader label="${c:l('recertification.Status2')}" />
+											<listheader label="${c:l('recertification.done')}" />
+										</listhead>
+										
+										<dataitem>
+											<listcell bind="@informationSystem"/>
+											<listcell bind="@statusLiteral" />
+											<listcell bind="@pctDone" />
+										</dataitem>
+									</listbox>
+									<grid id="gridRoles" dataPath="/esquema/dades/listboxIS:/roles">
+										<columns>
+											<column label="${c:l('recertification.Role')}"/>
+											<column label="${c:l('recertification.ownerReview')}"/>
+											<column label="${c:l('recertification.cisoReview')}"/>
+										</columns>
+										
+										<datarow>
+											<label bind="@roleName"/>
+											<checkbox bind="@checkedByOwner" disabled="true"/>
+											<checkbox bind="@checkedByCiso" disabled="true"/>
+										</datarow>
+									</grid>
+								</div>
+							</div>
+							<button label="${c:l('recertification.details') }" onClick="self.setVisible(false); rolesDiv.setVisible(true)"/>
+							<div id="rolesDiv" visible="false" style="margin-top:32px">
+								<toolbar style="border-top:0.1px solid white;">
+									<toolbarbutton label="${c:l('seleccionUsuario.btnDelegar') }" onClick="delegate()" id="delegateButton" 
+										onIdentity="delegate2(event.data)"/>
+									<listexporttoolbarbutton acces="true"
+										listbox="/esquema/lista/rolesGrid" />
+								</toolbar>
+								<listbox id="rolesGrid" dataPath="role" mold="paging" pageSize="30" fixedLayout="true" checkmark="true" multiple="true">
+									<listhead>
+										<listheader label="${c:l('recertification.Group') }" sort="auto"/>
+										<listheader label="${c:l('recertification.User') }" sort="auto"/>
+										<listheader label="${c:l('recertification.entitlement') }" sort="auto"/>
+										<listheader label="${c:l('recertification.previousEndorsement') }" sort="auto"/>
+										<listheader label="${c:l('recertification.pendingEndorsement') }" sort="auto"/>
+									</listhead>
+									<dataitem>
+										<listcell bind="rol/groupDescription"></listcell>
+										<listcell bind="rol/userFullName"></listcell>
+										<listcell bind="rol/roleDescription"></listcell>
+										<listcell>
+											<listener use="com.soffid.iam.addons.recertification.web.UsersListcell1"/>
+										</listcell>
+										<listcell>
+											<listener use="com.soffid.iam.addons.recertification.web.UsersListcell2"/>
+										</listcell>
+									</dataitem>
+								</listbox>
+							</div>
+						</form>
+					</detalls>
+				</esquemavertical>
+			</tabpanel>
+			<tabpanel>
+				<toolbar style="border-top:0.1px solid white;">
+					<commitbutton datamodel="/model" id="btcommit"/>
+					<undobutton datamodel="/model"/>
+				</toolbar>
+				<grid dataPath="/model:/template" id="templatesGrid" fixedLayout="true">
+					<columns>
+						<column label="${c:l('recertification.Name') }"/>
+						<column label="${c:l('recertification.type') }"/>
+						<column label="${c:l('recertification.filter') }"/>
+						<column label="${c:l('recertification.step1Expression') }"/>
+						<column label="${c:l('recertification.step2Expression') }"/>
+						<column label="${c:l('recertification.step3Expression') }"/>
+						<column label="${c:l('recertification.step4Expression') }"/>
+						<column label="${c:l('recertification.mailTemplate') }"/>
+						<column width="24px"/>
+					</columns>
+					<datarow>
+						<div>
+							<textbox bind="@name" onChange="" style="width: 100%"/>
+						</div>
+						<listbox dataPath="/model:/processType" bind="@type" mold="select">
+							<dataitem bind="@value">
+								<listcell bind="@literal"/>
 							</dataitem>
 						</listbox>
-						<grid id="gridRoles" dataPath="/esquema/dades/listboxIS:/roles">
-							<columns>
-								<column label="${c:l('recertification.Role')}"/>
-								<column label="${c:l('recertification.ownerReview')}"/>
-								<column label="${c:l('recertification.cisoReview')}"/>
-							</columns>
-							
-							<datarow>
-								<label bind="@roleName"/>
-								<checkbox bind="@checkedByOwner" disabled="true"/>
-								<checkbox bind="@checkedByCiso" disabled="true"/>
-							</datarow>
-						</grid>
-					</div>
+						<hbox widths="*,24px" width="100%">
+							<textbox bind="@filterScript" multiline="true" rows="2" onChange="" width="100%"></textbox>
+							<imageclic src="/img/pencil.png" width="24px" onClick="openEditor(event)" />
+						</hbox>
+						<hbox widths="*,24px" width="100%">
+							<textbox bind="@step1Script" multiline="true" rows="2" onChange="" width="100%"></textbox>
+							<imageclic src="/img/pencil.png" width="24px" onClick="openEditor(event)" />
+						</hbox>
+						<hbox widths="*,24px" width="100%">
+							<textbox bind="@step2Script" multiline="true" rows="2" onChange="" width="100%"></textbox>
+							<imageclic src="/img/pencil.png" width="24px" onClick="openEditor(event)" />
+						</hbox>
+						<hbox widths="*,24px" width="100%">
+							<textbox bind="@step3Script" multiline="true" rows="2" onChange="" width="100%"></textbox>
+							<imageclic src="/img/pencil.png" width="24px" onClick="openEditor(event)" />
+						</hbox>
+						<hbox widths="*,24px" width="100%">
+							<textbox bind="@step4Script" multiline="true" rows="2" onChange="" width="100%"></textbox>
+							<imageclic src="/img/pencil.png" width="24px" onClick="openEditor(event)" />
+						</hbox>
+						<hbox widths="*,24px" width="100%">
+							<textbox bind="@message" multiline="true" rows="2" onChange="" width="100%"></textbox>
+							<imageclic src="/img/pencil.png" width="24px" onClick="openHtmlEditor(event)" />
+						</hbox>
+						<imageclic src="~./img/list-remove.gif"  width="16px">
+							<attribute name="onClick"><![CDATA[
+							{
+								es.caib.zkib.binder.BindContext ctx = es.caib.zkib.datasource.XPathUtils.getComponentContext(event.getTarget());
+								es.caib.zkib.datasource.XPathUtils.removePath(ctx.getDataSource(), ctx.getXPath());
+							}
+							]]></attribute>
+						</imageclic>
+					</datarow>
+				</grid>
+				<div style="margin-top: 32px">
+					<button label="${c:l('recertification.addNewTemplate') }" >
+						<attribute name="onClick"><![CDATA[
+						{
+						    es.caib.zkib.binder.BindContext ctx = es.caib.zkib.datasource.XPathUtils.getComponentContext(templatesGrid);
+						    es.caib.zkib.datasource.XPathUtils.createPath(ctx.getDataSource(), ctx.getXPath());
+						}
+						]]></attribute>
+					</button>
 				</div>
-			</form>
-		</detalls>
-	</esquemavertical>
-</zk>
+			</tabpanel>
+		</tabpanels>
+	</tabbox>
+ 	<include src="finestres/editor.zul"/>
+	<window closable="true" id="top" position="center, center" onCancel="" title="${c:l('editorJS.Titol')}" visible="false" width="90%">
+		<zscript><![CDATA[
+			void cleanWindow()
+			{
+				editor.value = "";
+				top.visible=false;						
+			}
+			
+			void acceptaDada()
+			{
+				Component element = pageScope.get("contextComponent")[0];
+				element.value = editor.value;
+				Events.postEvent("onChange", element, editor.value );
+				cleanWindow();
+			}
+		]]>
+			
+		</zscript>
+		<attribute name="onEdit">
+     		pageScope.put("contextComponent", event.data);     		
+			editor.value = event.data[0].value;
+     		top.doHighlighted();
+		</attribute>
+		<attribute name="onClose">
+			cleanWindow();
+			event.stopPropagation ();
+		</attribute>
+
+		<fckeditor id="editor" value=""
+			height="400px"
+			width="100%"
+			/>
+
+		<separator spacing="5px"/>
+		<div align="right">
+			<button id="finishButton" label="${c:l('editorJS.zul.Accepta')}">
+				<attribute name="onClick">
+					acceptaDada();
+				</attribute>
+			</button>
+			<button label="${c:l('editorJS.zul.Cancel·la')}" onClick="cleanWindow()"/>
+		</div>								
+	</window>
+	<include src="finestres/identity.zul" />
+</frame>
