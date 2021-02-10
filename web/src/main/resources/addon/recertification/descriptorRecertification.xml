@@ -13,9 +13,11 @@
 		<finder name="process" type="process">
 			<ejb-finder
 				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
-				method="findRecertificationProcesses" if="${queryEnabled}">
-				<parameter value="${self.query[0].instance}" />
+				method="findRecertificationProcessesByTextAndQueryAsync" if="${query != null || textQuery != null}">
+				<parameter value="${textQuery}" />
+				<parameter value="${query}" />
 			</ejb-finder>
+			<new-instance-bean className="com.soffid.iam.addons.recertification.common.RecertificationProcess"/>
 		</finder>
 		
 		<finder name="processStatus" type="processStatus">
@@ -114,6 +116,17 @@
 				com.soffid.iam.addons.recertification.common.ProcessStatus.PREPARATION)
 				return "Preparation";
 		</custom-attribute>
+		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
+			<update-method method="update" returnBean="true">
+				<parameter value="${instance}" />
+			</update-method>
+			<insert-method method="create" returnBean="true">
+				<parameter value="${instance}" />
+			</insert-method>
+			<delete-method method="remove">
+				<parameter value="${instance}" />
+			</delete-method>
+		</ejb-handler>
 	</datanode>
 
 	<datanode name="role" transient="true">
@@ -144,6 +157,17 @@
 				com.soffid.iam.addons.recertification.common.ProcessStatus.PREPARATION)
 				return "Preparation";
 		</custom-attribute>
+		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
+			<update-method method="update">
+				<parameter value="${instance}" />
+			</update-method>
+			<insert-method method="create" returnBean="true">
+				<parameter value="${instance}" />
+			</insert-method>
+			<delete-method method="remove">
+				<parameter value="${instance}" />
+			</delete-method>
+		</ejb-handler>
 	</datanode>
 
 	<datanode name="query" transient="true" />
@@ -192,6 +216,17 @@
 				com.soffid.iam.addons.recertification.common.ProcessStatus.PREPARATION)
 				return "Preparation";
 		</custom-attribute>
+		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
+			<update-method method="update">
+				<parameter value="${instance}" />
+			</update-method>
+			<insert-method method="create" returnBean="true">
+				<parameter value="${instance}" />
+			</insert-method>
+			<delete-method method="remove">
+				<parameter value="${instance}" />
+			</delete-method>
+		</ejb-handler>
 	</datanode>
 	
 	<datanode name="roles" />

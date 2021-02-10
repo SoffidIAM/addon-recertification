@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?taglib uri="/WEB-INF/tld/web/core.dsp.tld" prefix="c" ?>
+<?taglib uri="/WEB-INF/tld/soffid.dsp.tld" prefix="soffid" ?>
+
+<frame xmlns:h="http://www.w3.org/1999/xhtml" mold="div" style="position: relative" 
+	use="com.soffid.iam.addons.recertification.web.PolicyFrameHandler" id="frame">
+	<datamodel id="model" rootNode="root"
+		src="addon/recertification/descriptorRecertification.xml"/>
+	<div sclass="card" id="card">
+		<div sclass="card__face card__face--front">
+
+			<div use="com.soffid.iam.web.component.NavigationBar" frame="frame">
+				<menu2>
+					<menu2item image="/img/change-columns.svg" label="${c:l('select-columns.title') }" onClick="ref:frame.changeColumns"/>
+					<menu2item image="/img/add.svg" label="${c:l('agents.zul.Afegeixnou') }" if="${soffid:isUserInRole('recertification:edit-policy')}"  onClick="ref:frame.addNew"/>
+					<menu2item image="/img/import.svg" label="${c:l('tenant.zul.import') }" if="" onClick="ref:frame.importCsv"/>
+					<menu2item image="/img/download.svg" label="${c:l('zkdb.download') }" onClick="ref:frame.downloadCsv"/>
+				</menu2>
+			</div>
+	
+			<datatable id="listbox" autocommit="true" 
+				use="com.soffid.iam.web.component.DynamicColumnsDatatable"
+				preference="recertification-policy"
+				multiselect="true"
+				onMultiSelect="ref:frame.multiSelect"
+				dataPath="/model:/template" maxheight="70vh" sortColumn="0"
+				onSelect="ref:frame.showDetails" enablefilter="false">
+			<attribute name="allColumns"><![CDATA[
+- name: ${c:l('recertification.Name') }
+  value: name
+  default: true
+- name: ${c:l('recertification.type')}
+  value: type
+  template: #{type.value ==  "E"?  "${c:l('recertification.type.E')}": type.value ==  "A"?  "${c:l('recertification.type.A')}": type.value ==  "R"?  "${c:l('recertification.type.R')}": "" }
+  default: true
+- name: ${c:l('recertification.filter')}
+  value: filterScript
+- name: ${c:l('recertification.step1Expression')}
+  value: step1Script
+- name: ${c:l('recertification.step2Expression')}
+  value: step2Script
+- name: ${c:l('recertification.step3Expression')}
+  value: step3Script
+- name: ${c:l('recertification.step4Expression')}
+  value: step4Script
+- name: ${c:l('recertification.mailTemplate')}
+  value: message
+			]]></attribute>
+			</datatable>
+			<div width="100%" style="text-align: right"  >
+				<div class="deleteButton" onClick="ref:frame.deleteSelected" visible="false">-</div>
+				<div class="addButton" onClick="ref:frame.addNew" if="${soffid:isUserInRole('recertification:edit-policy')}">+</div>
+			</div>
+			
+		</div>
+		<div sclass="card__face card__face--back">
+			<div id="dades">
+				<div use="com.soffid.iam.web.component.NavigationBar" frame="frame" lastAction="ref:frame.hideDetails">
+					<pager datatable="listbox"/>
+					
+					<menu2>
+						<menu2item if="${soffid:isUserInRole('recertification:edit-policy')}" image="/img/trash.svg" label="${c:l('plugins.zul.Delete') }" onClick="ref:frame.delete"/>
+					</menu2>
+					<databutton image="/img/save.svg" label="${c:l('common.apply') }" datamodel="/model" onClick="ref:frame.applyNoClose" onlyIcon="true"/>
+				</div>
+				<form2 id="form" onChangeXPath="ref:frame.onChangeForm"
+					dataPath="/listbox:/." width="100%">
+					<customfield3 bind="name" dataType="STRING" maxlength="150" required="true" label="${c:l('recertification.Name') }"/>
+					<customfield3 bind="type" dataType="STRING" required="true" label="${c:l('recertification.type') }" 
+						enumeration="com.soffid.iam.addons.recertification.common.RecertificationType"/>
+					<customfield3 dataType="STRING" bind="filterScript" multiline="true" maxlength="10000" 
+						label="${c:l('recertification.filter') }" selectIcon="/img/pencil.svg" 
+						javascript='{"serviceLocator":"com.soffid.iam.ServiceLocator","account":"com.soffid.iam.api.Account","role":"com.soffid.iam.api.Role","grant":"com.soffid.iam.api.RoleAccount"}' />
+					<customfield3 dataType="STRING" bind="step1Script" multiline="true" maxlength="10000" 
+						label="${c:l('recertification.step1Expression') }" selectIcon="/img/pencil.svg" 
+						javascript='{"serviceLocator":"com.soffid.iam.ServiceLocator","account":"com.soffid.iam.api.Account","role":"com.soffid.iam.api.Role","grant":"com.soffid.iam.api.RoleAccount"}' />
+					<customfield3 dataType="STRING" bind="step2Script" multiline="true" maxlength="10000" 
+						label="${c:l('recertification.step2Expression') }" selectIcon="/img/pencil.svg" 
+						javascript='{"serviceLocator":"com.soffid.iam.ServiceLocator","account":"com.soffid.iam.api.Account","role":"com.soffid.iam.api.Role","grant":"com.soffid.iam.api.RoleAccount"}' />
+					<customfield3 dataType="STRING" bind="step3Script" multiline="true" maxlength="10000" 
+						label="${c:l('recertification.step3Expression') }" selectIcon="/img/pencil.svg" 
+						javascript='{"serviceLocator":"com.soffid.iam.ServiceLocator","account":"com.soffid.iam.api.Account","role":"com.soffid.iam.api.Role","grant":"com.soffid.iam.api.RoleAccount"}' />
+					<customfield3 dataType="STRING" bind="step4Script" multiline="true" maxlength="10000" 
+						label="${c:l('recertification.step4Expression') }" selectIcon="/img/pencil.svg" 
+						javascript='{"serviceLocator":"com.soffid.iam.ServiceLocator","account":"com.soffid.iam.api.Account","role":"com.soffid.iam.api.Role","grant":"com.soffid.iam.api.RoleAccount"}' />
+					<customfield3 dataType="HTML" bind="message" multiline="true" maxlength="10000"
+						 selectIcon="/img/pencil.svg" 
+						label="${c:l('recertification.mailTemplate') }"/>
+					<div style="text-align: right; width: 100%">
+						<databutton image="/img/undo-r.svg" label="${c:l('common.undo')}" datamodel="/model" onClick="ref:frame.undo">
+						</databutton>
+						<databutton image="/img/save-r.svg" label="${c:l('common.apply') }" datamodel="/model" onClick="ref:frame.apply"/>
+					</div>
+				</form2>
+			</div>
+		</div>
+	</div>
+</frame>

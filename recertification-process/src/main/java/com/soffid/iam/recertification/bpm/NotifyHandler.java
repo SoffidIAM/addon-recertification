@@ -36,7 +36,7 @@ public class NotifyHandler implements ActionHandler {
 			}
 			else
 			{
-				String url = ConfigurationCache.getProperty("soffid.externalURL")+"/selfservice/addon/recertification/recertification.zul?id="+id;
+				String url = ConfigurationCache.getProperty("soffid.externalURL")+"/selfservice/index.zul?target=addon/recertification/recertification.zul%3fid="+id;
 				svc.notifyUsers(rp, url);
 			}
 		} finally {

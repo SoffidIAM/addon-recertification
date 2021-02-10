@@ -6,6 +6,4 @@
 	<core name="Recertification common classes" resource="recertification-common-${pom.version}.jar"/>
 	<core name="Recertification core classes" resource="recertification-core-${pom.version}.jar"/>
 	<web name="Recertification web files" resource="recertification-web-${pom.version}.war"/>
-	<selfService name="Recertification self-service files" resource="recertification-selfservice-${pom.version}.war"/>
-	<core name="Recertification sample processes" resource="bpm-container-${pom.version}.jar"/>
 </SoffidIAMPlugin>

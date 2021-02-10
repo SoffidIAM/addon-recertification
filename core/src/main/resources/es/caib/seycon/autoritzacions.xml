@@ -22,6 +22,12 @@
 	</autoritzacio>
 
 	<autoritzacio>
+		<codi>seu:recertification-policy:show</codi>
+		<descripcio>Access to Recertification policy window</descripcio>
+		<ambit>Soffid</ambit>
+	</autoritzacio>
+
+	<autoritzacio>
 		<codi>recertification:manage</codi>
 		<descripcio>Manage role recertification</descripcio>
 		<ambit>Recertification</ambit>
@@ -35,4 +41,11 @@
 		<descripcio>Query role recertification</descripcio>
 		<ambit>Recertification</ambit>
 	</autoritzacio>
+
+	<autoritzacio>
+		<codi>recertification:edit-policy</codi>
+		<descripcio>Edit role recertification templates</descripcio>
+		<ambit>Recertification</ambit>
+	</autoritzacio>
+
 </autoritzacions>

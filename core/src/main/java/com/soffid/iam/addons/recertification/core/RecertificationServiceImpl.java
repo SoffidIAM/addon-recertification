@@ -3,6 +3,7 @@
  */
 package com.soffid.iam.addons.recertification.core;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,6 +21,7 @@ import org.jbpm.JbpmContext;
 import org.jbpm.jpdl.el.FunctionMapper;
 import org.jbpm.jpdl.el.VariableResolver;
 import org.jbpm.jpdl.el.impl.ExpressionEvaluatorImpl;
+import org.json.JSONException;
 
 import com.soffid.iam.ServiceLocator;
 import com.soffid.iam.addons.recertification.common.ProcessStatus;
@@ -43,21 +45,28 @@ import com.soffid.iam.addons.recertification.model.RecertifiedRoleDefinitionEnti
 import com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedUserEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedUserEntityDao;
+import com.soffid.iam.api.AsyncList;
 import com.soffid.iam.api.BpmUserProcess;
+import com.soffid.iam.api.PagedResult;
 import com.soffid.iam.api.Role;
 import com.soffid.iam.api.RoleAccount;
+import com.soffid.iam.bpm.service.scim.ScimHelper;
+import com.soffid.iam.common.security.SoffidPrincipal;
 import com.soffid.iam.model.GroupEntity;
 import com.soffid.iam.model.Parameter;
 import com.soffid.iam.model.RoleAccountEntity;
 import com.soffid.iam.model.RoleEntity;
 import com.soffid.iam.model.UserEntity;
+import com.soffid.iam.model.criteria.CriteriaSearchConfiguration;
 import com.soffid.iam.service.impl.bshjail.SecureInterpreter;
+import com.soffid.scimquery.EvalException;
+import com.soffid.scimquery.parser.ParseException;
+import com.soffid.scimquery.parser.TokenMgrError;
 
 import bsh.Modifiers;
 import bsh.NameSpace;
 import bsh.TargetError;
 import bsh.UtilEvalError;
-import es.caib.seycon.ng.comu.SoDRisk;
 import es.caib.seycon.ng.exception.InternalErrorException;
 import es.caib.seycon.ng.utils.Security;
 
@@ -419,6 +428,22 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			getRecertifiedRoleEntityDao().update(rre);
 			if ( isFinished (rre))
 			{
+				Security.nestedLogin(Security.getCurrentAccount(), new String[] {
+						Security.AUTO_USER_QUERY+Security.AUTO_ALL,
+						Security.AUTO_USER_UPDATE+Security.AUTO_ALL,
+						Security.AUTO_USER_ROLE_DELETE+Security.AUTO_ALL,
+						Security.AUTO_USER_ROLE_CREATE+Security.AUTO_ALL,
+						Security.AUTO_USER_ROLE_QUERY+Security.AUTO_ALL
+					});
+				try {
+					RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
+					RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
+					ra.setCertificationDate(new Date());
+					getApplicationService().update(ra);
+				} finally {
+					Security.nestedLogoff();
+				}
+				
 				if ( rre.getUser() != null)
 					checkUserStatus(rre.getUser());
 				if ( rre.getInformationSystem() != null)
@@ -431,16 +456,19 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					Security.AUTO_USER_QUERY+Security.AUTO_ALL,
 					Security.AUTO_USER_UPDATE+Security.AUTO_ALL,
 					Security.AUTO_USER_ROLE_DELETE+Security.AUTO_ALL,
+					Security.AUTO_USER_ROLE_CREATE+Security.AUTO_ALL,
 					Security.AUTO_USER_ROLE_QUERY+Security.AUTO_ALL
 				});
-				try {
-					RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
-					RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
-					if (ra != null && ra.isEnabled())
-						getApplicationService().delete(ra);
-				} finally {
-					Security.nestedLogoff();
+			try {
+				RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
+				RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
+				if (ra != null && ra.isEnabled()) {
+					ra.setEndDate(new Date());
+					getApplicationService().update(ra);
 				}
+			} finally {
+				Security.nestedLogoff();
+			}
 			
 		}
 	}
@@ -527,7 +555,24 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	}
 
 	private boolean isFinished(RecertifiedRoleEntity rre) {
-		if  ( rre.getStep1Users() != null && ! rre.getStep1Users().trim().isEmpty() && rre.getCheck1() == null ||
+		if (Boolean.FALSE.equals(rre.getCheck1())) {
+			rre.setStep2Users(null);
+			rre.setStep3Users(null);
+			rre.setStep4Users(null);
+			return true;
+		}
+		else if (Boolean.FALSE.equals(rre.getCheck2())) {
+			rre.setStep3Users(null);
+			rre.setStep4Users(null);
+			return true;
+		} 
+		else if (Boolean.FALSE.equals(rre.getCheck3())) {
+			rre.setStep4Users(null);
+			return true;
+		} 
+		else if (Boolean.FALSE.equals(rre.getCheck4()))
+			return true;
+		else if  ( rre.getStep1Users() != null && ! rre.getStep1Users().trim().isEmpty() && rre.getCheck1() == null ||
 				 rre.getStep2Users() != null && ! rre.getStep2Users().trim().isEmpty() && rre.getCheck2() == null ||
 				 rre.getStep3Users() != null && ! rre.getStep3Users().trim().isEmpty() && rre.getCheck3() == null ||
 				 rre.getStep4Users() != null && ! rre.getStep4Users().trim().isEmpty() && rre.getCheck4() == null )
@@ -776,16 +821,20 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			if (rpe.getInformationSystems().isEmpty())
 				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NoSystemSelected")); //$NON-NLS-1$
 			
+			boolean any = false;
 			for (RecertifiedInformationSystemEntity rge: rpe.getInformationSystems())
 			{
-				startIsAccountsRecertification(rpe, i, ns, rge);
+				if (startIsAccountsRecertification(rpe, i, ns, rge))
+					any = true;
 			}
+			if (!any)
+				throw new InternalErrorException("No account to recertify");
 		} finally {
 			ctx.close ();
 		}
 	}
 
-	private void startIsAccountsRecertification(RecertificationProcessEntity rpe, SecureInterpreter i, NameSpace ns,
+	private boolean startIsAccountsRecertification(RecertificationProcessEntity rpe, SecureInterpreter i, NameSpace ns,
 			RecertifiedInformationSystemEntity rie) throws UtilEvalError, Exception {
 		String filterScript = rpe.getTemplate().getFilterScript();
 		
@@ -851,6 +900,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			rie.setStatus(ProcessStatus.CANCELLED);
 			getRecertifiedInformationSystemEntityDao().update(rie);
 		}
+		return any;
 	}
 
 	public void startEntitlementProcess(RecertificationProcess rp, RecertificationProcessEntity rpe)
@@ -875,10 +925,12 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			List<GroupEntity> pendingGroups = new LinkedList<GroupEntity>();
 			for (RecertifiedGroupEntity rge: rpe.getGroups())
 			{
-				groups.add(rge.getGroup().getName());
-				startGroupRecertification(rpe, i, ns, rge);
-				for (GroupEntity child: rge.getGroup().getChildren())
-					pendingGroups.add(child);
+				if (!groups.contains(rge.getGroup().getName())) {
+					groups.add(rge.getGroup().getName());
+					startGroupRecertification(rpe, i, ns, rge);
+					for (GroupEntity child: rge.getGroup().getChildren())
+						pendingGroups.add(child);
+				}
 			}
 			while ( ! pendingGroups.isEmpty())
 			{
@@ -897,6 +949,8 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 						pendingGroups.add(child);
 				}
 			}
+			if (rpe.getGroups().isEmpty())
+				throw new InternalErrorException("No permission matches the template filter criteria");
 		} finally {
 			ctx.close ();
 		}
@@ -1216,6 +1270,160 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 				rre.setStep4Users(users);
 		}
 		getRecertifiedRoleEntityDao().update(rre);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.soffid.iam.recertification.core.RecertificationServiceBase#handleCheckByUser(com.soffid.iam.recertification.common.RecertifiedRole)
+	 */
+	@Override
+	protected void handleCheck(RecertifiedRole rr, Boolean check, String comments) throws Exception {
+		RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().load(rr.getId());
+		if (comments != null && ! comments.trim().isEmpty()) {
+			SoffidPrincipal p = Security.getSoffidPrincipal();
+			if (rre.getComments() == null)
+			{
+				rre.setComments(p.getFullName()+":" +comments);
+				getRecertifiedRoleEntityDao().update(rre);
+			} else {
+				if (comments.startsWith(rre.getComments()))
+					rre.setComments( rre.getComments()+"\n"+p.getFullName()+":" +comments.substring(rre.getComments().length()));
+				else
+					rre.setComments( rre.getComments()+"\n"+p.getFullName()+":" +comments);
+				getRecertifiedRoleEntityDao().update(rre);
+			}
+		}
+		if (check != null)
+			handleCheck(rr, check.booleanValue());
+	}
+
+	@Override
+	protected AsyncList<RecertificationProcess> handleFindRecertificationProcessesByTextAndQueryAsync(final String text, final String query)
+			throws Exception {
+		final AsyncList<RecertificationProcess> result = new AsyncList<RecertificationProcess>();
+		getAsyncRunnerService().run(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					doFindReceritficationProcessByJsonQuery(text, query, null, null, result);
+				} catch (Throwable e) {
+					throw new RuntimeException(e);
+				}				
+			}
+		}, result);
+
+		return result;
+	}
+
+	@Override
+	protected PagedResult<RecertificationProcess> handleFindRecertificationProcessesByTextAndQuery(String text, String query, Integer first,
+			Integer pageSize) throws Exception {
+		final LinkedList<RecertificationProcess> result = new LinkedList<RecertificationProcess>();
+		PagedResult<RecertificationProcess> pr = doFindReceritficationProcessByJsonQuery(text, query, first, pageSize, result);
+		return pr;
+	}
+
+	private PagedResult<RecertificationProcess> doFindReceritficationProcessByJsonQuery(
+			String text, String query, Integer first,
+			Integer pageSize, List<RecertificationProcess> result) throws UnsupportedEncodingException, ClassNotFoundException, JSONException, InternalErrorException, EvalException, ParseException, TokenMgrError {
+		final RecertificationProcessEntityDao dao = getRecertificationProcessEntityDao();
+		ScimHelper h = new ScimHelper(RecertificationProcess.class);
+		h.setPrimaryAttributes(new String[] { "name"});
+		CriteriaSearchConfiguration config = new CriteriaSearchConfiguration();
+		config.setFirstResult(first);
+		config.setMaximumResultSize(pageSize);
+		h.setConfig(config);
+		h.setTenantFilter("tenant.id");
+
+		h.setGenerator((entity) -> {
+			RecertificationProcessEntity ne = (RecertificationProcessEntity) entity;
+			return dao.toRecertificationProcess((RecertificationProcessEntity) entity);
+		}); 
+		
+		h.search(text, query, (Collection) result); 
+
+		PagedResult<RecertificationProcess> pagedResult = new PagedResult<RecertificationProcess>();
+		pagedResult.setResources(result);
+		pagedResult.setStartIndex( first != null ? first: 0);
+		pagedResult.setItemsPerPage( pageSize );
+		pagedResult.setTotalResults(h.count());
+		return pagedResult;
+	}
+
+	@Override
+	protected List<RecertificationProcess> handleFindActiveRecertificationProcesses ()
+			throws Exception {
+		final SoffidPrincipal p = Security.getSoffidPrincipal();
+		final List<RecertificationProcess> result = new LinkedList<RecertificationProcess>();
+
+		HashSet<Long> ids = new HashSet<Long>();
+		List<String> roles = new LinkedList<>();
+		roles.add(p.getUserName());
+		for (String role: p.getSoffidRoles()) roles.add(role);
+		doFindActiveRecertificationProcesses(result, ids, roles);
+
+		return result;
+	}
+
+
+	private void doFindActiveRecertificationProcesses(List<RecertificationProcess> result,
+			HashSet<Long> ids, List<String> roles) {
+		StringBuffer sb = new StringBuffer();
+		List<Parameter> params = new LinkedList<Parameter>();
+		for (int i = 0; i < roles.size(); i++) {
+			String r = roles.get(i);
+			params.add(new Parameter ("s"+i, r+" %"));
+			params.add(new Parameter ("e"+i, "% "+r));
+			params.add(new Parameter ("m"+i, "% "+r+" %"));
+			params.add(new Parameter ("c"+i, r));
+			if (sb.length() > 0) sb.append(" or ");
+			sb.append("r.check1 is null and r.step1Users like :s"+i+" or "
+				+ " r.check2 is null and r.check1 is not null and r.step2Users like :s"+i+" or "
+				+ " r.check3 is null and r.check2 is not null and r.step3Users like :s"+i+" or "
+				+ " r.check4 is null and r.check3 is not null and r.step4Users like :s"+i+" or "
+				+ " r.check1 is null and r.step1Users like :e"+i+" or "
+				+ " r.check2 is null and r.check1 is not null and r.step2Users like :e"+i+" or "
+				+ " r.check3 is null and r.check2 is not null and r.step3Users like :e"+i+" or "
+				+ " r.check4 is null and r.check3 is not null and r.step4Users like :e"+i+" or "
+				+ " r.check1 is null and r.step1Users like :m"+i+" or "
+				+ " r.check2 is null and r.check1 is not null and r.step2Users like :m"+i+" or "
+				+ " r.check3 is null and r.check2 is not null and r.step3Users like :m"+i+" or "
+				+ " r.check4 is null and r.check3 is not null and r.step4Users like :m"+i+" or "
+				+ " r.check1 is null and r.step1Users = :c"+i+" or "
+				+ " r.check2 is null and r.check1 is not null and r.step2Users = :c"+i+" or "
+				+ " r.check3 is null and r.check2 is not null and r.step3Users = :c"+i+" or "
+				+ " r.check4 is null and r.check3 is not null and r.step4Users = :c"+i+" ");
+		}
+		
+		Parameter[] paramArray = params.toArray(new Parameter[params.size()]);
+		for (RecertificationProcessEntity o: getRecertificationProcessEntityDao().query(
+				"select distinct o "
+				+ "from com.soffid.iam.addons.recertification.model.RecertificationProcessEntityImpl as o "
+				+ "join o.informationSystems as app "
+				+ "join app.grants as r "
+				+ "where o.status = 'A' and (" + sb.toString() + ")",
+				paramArray))
+		{
+			if (!ids.contains(o.getId())) {
+				ids.add(o.getId());
+				result.add(getRecertificationProcessEntityDao().toRecertificationProcess(o));
+			}
+		}
+
+		for (RecertificationProcessEntity o: getRecertificationProcessEntityDao().query(
+				"select distinct o "
+				+ "from com.soffid.iam.addons.recertification.model.RecertificationProcessEntityImpl as o "
+				+ "join o.groups as g "
+				+ "join g.users as u "
+				+ "join u.roles as r "
+				+ "where o.status = 'A' and (" + sb.toString() + ")",
+				paramArray))
+		{
+			if (!ids.contains(o.getId())) {
+				ids.add(o.getId());
+				result.add(getRecertificationProcessEntityDao().toRecertificationProcess(o));
+			}
+
+		}
 	}
 }
 

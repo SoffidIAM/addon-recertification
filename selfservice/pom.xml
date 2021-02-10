@@ -98,6 +98,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.soffid.iam.console</groupId>
+      <artifactId>iam-common</artifactId>
+      <version>${console.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>tomcat</groupId>
       <artifactId>jsp-api</artifactId>
       <version>5.0.18</version>

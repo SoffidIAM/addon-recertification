@@ -89,6 +89,9 @@ public class RecertifiedRole {
 
 	@Nullable
 	public String comments;
+	
+	@Nullable
+	public String newComments;
 
 	public boolean finished;
 }

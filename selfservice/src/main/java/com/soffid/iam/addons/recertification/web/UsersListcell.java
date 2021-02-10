@@ -9,6 +9,7 @@ import javax.naming.NamingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zul.Checkbox;
 import org.zkoss.zul.Div;
 import org.zkoss.zul.Label;
 
@@ -39,21 +40,32 @@ public class UsersListcell extends DataListener {
 			RecertifiedRole rr = (RecertifiedRole) dn.getInstance();
 			if (rr != null)
 			{
-				addUser ( rr.getStep1Author(), rr.getStep1Date() );
-				addUser ( rr.getStep2Author(), rr.getStep2Date() );
-				addUser ( rr.getStep3Author(), rr.getStep3Date() );
-				addUser ( rr.getStep4Author(), rr.getStep4Date() );
+				addUser ( rr.getStep1Author(), rr.getCheck1(), rr.getStep1Date() );
+				addUser ( rr.getStep2Author(), rr.getCheck2(), rr.getStep2Date() );
+				addUser ( rr.getStep3Author(), rr.getCheck3(), rr.getStep3Date() );
+				addUser ( rr.getStep4Author(), rr.getCheck4(), rr.getStep4Date() );
 			}			
 		}
 	}
 
-	private void addUser(String author, Date date) {
+	private void addUser(String author, Boolean approved, Date date) {
 		if (author != null && ! author.isEmpty())
 		{
 			Security.nestedLogin(Security.ALL_PERMISSIONS);
 			try { 
 				User user = EJBLocator.getUserService().findUserByUserName(author);
 				Div d = new Div();
+				if (approved != null)
+				{
+					Checkbox cb = new Checkbox();
+					cb.setChecked(true);
+					cb.setDisabled(true);
+					if (approved.booleanValue())
+						cb.setSclass("custom-checkbox-green custom-checkbox");
+					else
+						cb.setSclass("custom-checkbox-red custom-checkbox");
+					d.appendChild(cb);
+				}
 				getParent().appendChild(d);
 				d.appendChild(new Label (user.getUserName()+" - "+user.getFullName()+" "));
 				if (date != null)

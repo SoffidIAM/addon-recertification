@@ -61,6 +61,7 @@ public class UsersListcell1 extends DataListener {
 				{
 					Checkbox cb = new Checkbox();
 					cb.setChecked(true);
+					cb.setDisabled(true);
 					if (approved.booleanValue())
 						cb.setSclass("custom-checkbox-green custom-checkbox");
 					else

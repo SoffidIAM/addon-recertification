@@ -1,0 +1,24 @@
+- name: soffid.admin
+  img: /img/menu/laboratory.svg
+  options:
+      - name: seu.resources
+        options:
+        - name: recertification.campaign.title
+          img: /addon/recertification/campaign.svg
+          permissions: ["seu:recertification:show"]
+          url: /addon/recertification/recertification_info.zul
+      - name: seu.configuration
+        options:
+        - name: seu.security
+          img: /img/menu/security.svg
+          options:
+          - name: recertification-policy.title
+            img: /addon/recertification/menu-policy.svg
+            permissions: ["seu:recertification-policy:show"]
+            url: /addon/recertification/recertification_policy.zul
+- name: recertification.title
+  img: /addon/recertification/menu.svg
+  permissions: ["recertification:query"]
+  url: /addon/recertification/self.zul
+  position: 5
+  handler: com.soffid.iam.addons.recertification.web.RecertificationMenuHandler

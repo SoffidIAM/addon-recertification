@@ -46,5 +46,5 @@ public class RecertificationTemplateEntity {
 	RecertificationTemplateEntity findByName (String name) {return null;}
 }
 
-@Index(name="SCR_TEMPLA_UK", entity = RecertificationTemplateEntity.class, columns = {"SCT_NAME"}, unique = true )
+@Index(name="SCR_TEMPLA_UK", entity = RecertificationTemplateEntity.class, columns = {"SCT_TEN_ID", "SCT_NAME"}, unique = true )
 class RecertificationTemplateEntityUniqueKey {}

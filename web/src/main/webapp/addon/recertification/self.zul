@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?taglib uri="/WEB-INF/tld/web/core.dsp.tld" prefix="c" ?>
+<?taglib uri="/WEB-INF/tld/soffid.dsp.tld" prefix="soffid" ?>
+
+<frame xmlns:h="http://www.w3.org/1999/xhtml" mold="div" style="position: relative" 
+	use="com.soffid.iam.addons.recertification.web.RecertificateFrameHandler" id="frame"
+	onFinishDelegation="ref:frame.finishDelegation">
+	<datamodel id="model" rootNode="root"
+		src="addon/recertification/descriptorSelf.xml"/>
+	<div sclass="card" id="card">
+		<div sclass="card__face card__face--front">
+			<div use="com.soffid.iam.web.component.NavigationBar" frame="frame">
+			</div>
+			<datatable id="listbox" autocommit="true" 
+				multiselect="true"
+				onMultiSelect="ref:frame.multiSelect"
+				dataPath="/model:/process" maxheight="70vh" sortColumn="0"
+				onSelect="ref:frame.showDetails" enablefilter="false">
+				<attribute name="columns"><![CDATA[
+- name: ${c:l('recertification.Name')}
+  value: name
+- name: ${c:l('recertification.StartDate')}
+  value: startDate
+  template: #{startDate_datetime}
+  className: datetimeColumn
+  				]]></attribute>
+  			</datatable>
+		</div>
+		<div sclass="card__face card__face--back">
+			<div id="dades">
+				<div use="com.soffid.iam.web.component.NavigationBar" frame="frame" lastAction="ref:frame.hideDetails">
+					<pager datatable="listbox"/>
+					
+					<databutton image="/img/save.svg" label="${c:l('common.apply') }" datamodel="/model" onClick="ref:frame.applyNoClose" onlyIcon="true"/>
+				</div>
+				<form2 id="form" onChangeXPath="ref:frame.onChangeForm"
+					dataPath="/listbox:/." width="100%">
+					<script> 
+						function previousEndorsement(td,col,value) { td.innerHTML = value.previousEndorsement;}
+						function pendingEndorsement(td,col,value) { td.innerHTML = value.pendingEndorsement;}
+					</script>
+					<datatable id="rolesGrid" dataPath="/listbox:/role" multiselect="true" use="com.soffid.iam.addons.recertification.web.RecertificateDatatable"
+						onAccept="ref:frame.accept"
+						onReject="ref:frame.reject"
+						onSelect="ref:frame.onSelectRole" 
+						onComment="ref:frame.comment"
+						onMultiSelect="ref:frame.onSelectRole">
+						<attribute name="columns"><![CDATA[
+			- name: "${c:l('recertification.Group') }"
+			  value: rol.groupDescription
+			- name: "${c:l('recertification.User') }"
+			  value: rol.userFullName
+			- name: "${c:l('recertification.entitlement') }"
+			  value: rol.roleDescription
+			- name: "${c:l('recertification.previousEndorsement') }"
+			  render: previousEndorsement
+			- name: "${c:l('recertification.pendingEndorsement') }"
+			  template: >-
+			     <div style="display:inline-block" class="custom-checkbox-green custom-checkbox" onClick="zkDatatable.sendClientAction(this,'onAccept');"><input type="checkbox" #{accepted }="#{accepted}"><label/></div>
+			     <div style="display:inline-block" class="custom-checkbox-red custom-checkbox" onClick="zkDatatable.sendClientAction(this,'onReject');"><input type="checkbox" #{rejected }="#{rejected }"><label/></div>
+			  className: statusColumn
+			- name: "${c:l('recertification.comments') }"
+			  value: comments
+			  template: <input style="width: 100%; border: none" value="#{newComments}" onInput="zkDatatable.sendClientAction(this,'onComment', [event.target.value]);"/>
+					]]></attribute>
+					</datatable>
+					<div style="text-align: right; width: 100%">
+						<button image="/img/undo-r.svg" label="${c:l('task.filter.lblVolver')}" 
+							onClick="ref:frame.undo" />
+						<button image="/img/save-r.svg" label="${c:l('rules.apply')}" 
+							onClick="ref:frame.applyNow" />
+						<button image="/img/user-r.svg" style="float: left" label="${c:l('seleccionUsuario.btnDelegar')}" 
+							visible="false"
+							id="delegateButton" 
+							onClick="ref:frame.delegate"/>
+					</div>
+				</form2>
+			</div>
+		</div>
+	</div>
+</frame>

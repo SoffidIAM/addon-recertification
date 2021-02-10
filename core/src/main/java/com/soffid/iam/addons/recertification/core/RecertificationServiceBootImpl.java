@@ -23,37 +23,6 @@ public class RecertificationServiceBootImpl extends RecertificationServiceBootBa
 
 	@Override
 	protected void handleTenantBoot(Tenant tenant) throws Exception {
-		Security.nestedLogin(tenant.getName(), "anonymous", Security.ALL_PERMISSIONS);
-		try {
-			uploadFile("recertification-process-wf.par", "Recertification process");
-			
-			uploadFile("recertification-group-process-wf.par", "Group Recertification process");
-			
-			uploadFile("recertification-role-process-wf.par", "Information system Recertification process");
-		} finally {
-			Security.nestedLogoff();
-		}
-	}
-
-	private void uploadFile(String parFile, String bpmName) throws InternalErrorException {
-		BpmEngine engine = getBpmEngine();
-		boolean found = false;
-		for ( ProcessDefinition def: engine.findProcessDefinitions(bpmName, false) )
-		{
-			if (def.getName().equals(bpmName))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (! found)
-		{
-			InputStream in = getClass().getClassLoader().getResourceAsStream(parFile);
-			if (in != null)
-				engine.upgradeParFile(in);
-			else
-				LogFactory.getLog(getClass()).info("Missing resource "+parFile);
-		}
 	}
 
 }

@@ -135,8 +135,8 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -274,7 +274,7 @@
 		<dependency>
 			<groupId>com.soffid.iam.sync</groupId>
 			<artifactId>syncserver</artifactId>
-			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">${console.version}</version>
+			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">2.7.0</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>

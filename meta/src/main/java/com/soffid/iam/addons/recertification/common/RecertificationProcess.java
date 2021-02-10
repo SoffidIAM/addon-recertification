@@ -5,9 +5,11 @@
 //
 
 package com.soffid.iam.addons.recertification.common;
+import com.soffid.iam.addons.recertification.model.RecertificationProcessEntity;
 import com.soffid.mda.annotation.*;
 
 @ValueObject 
+@JsonObject(hibernateClass = RecertificationProcessEntity.class)
 public class RecertificationProcess {
 
 	public java.lang.String name;

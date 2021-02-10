@@ -8,13 +8,12 @@
 <?component name="input_etiqueta" macro-uri="/comu/input_etiqueta.zul"?>
 
 <frame xmlns:h="http://www.w3.org/1999/xhtml">
-
 	<style>
 		/* Customize the label (the container) */ 
 		.custom-checkbox {
 			display: inline-block; position: relative; padding-left: 35px;
 			margin-bottom: 12px; cursor: pointer; font-size: 22px;
-			height: 18px; -webkit-user-select: none; 
+			height: 24px; width:32px; float:left; -webkit-user-select: none; 
 			-moz-user-select: none; -ms-user-select: none; user-select: none; 
 		}
 
@@ -75,7 +74,7 @@
 		}
 	</style>
 	
-	<datamodel id="model" rootNode="root"
+	<datamodel id="model" rootNode="root" onCommit="checkAny()"
 		src="addon/recertification/descriptorSelfServiceRecertification.xml" />
 
 	<zscript>
@@ -83,7 +82,9 @@
 			import java.util.Map;
 			import com.soffid.iam.addons.recertification.common.*;
 			
-			Long processId = arg.get("id");
+			String processIdString = execution.getNativeRequest().getParameter("id") ;
+			Long processId = processIdString == null || processIdString.trim().isEmpty() ? null:
+				Long.parseLong( processIdString);
 
 			boolean showRoles = false;
 			boolean showProcesses = false;
@@ -101,6 +102,17 @@
 			}
 			catch (Exception ex) {}
 			
+			void checkAny () {
+				if ( rolesGrid.getItemCount() == 0) {
+					es.caib.zkib.zkiblaf.Missatgebox.avis("Well done. You have earned two points. The points will be displayed in your Security Awareness portal", "Congratulations",
+							new org.zkoss.zk.ui.event.EventListener() {
+						public void onEvent(Event arg0) throws Exception {
+							Executions.sendRedirect("/index.zul");
+						}
+					});
+				}
+			}
+			
 			void selectProcess(Event event) {
 				processId = es.caib.zkib.datasource.XPathUtils.getValue(event.getTarget(), "id");
 				if (processId != null)
@@ -114,6 +126,7 @@
 			void delegate () {
 				if (! rolesGrid.getSelectedItems().isEmpty())
 				{
+					model.commit();
 					Page p = desktop.getPage("identity");
 					p.setVariable("types",
 								new com.soffid.iam.web.component.Identity.Type[] {
@@ -184,6 +197,7 @@
 				</listheader>
 				<listheader label="${c:l('recertification.previousEndorsement') }" sort="auto"/>
 				<listheader label="${c:l('recertification.action') }" width="96px" sort="auto"/>
+				<listheader label="${c:l('recertification.comments') }" sort="auto"/>
 			</listhead>
 			<dataitem bind=".">
 				<listcell bind="rol/groupDescription"></listcell>
@@ -206,6 +220,9 @@
 				</listcell>
 				<listcell>
 					<listener use="com.soffid.iam.addons.recertification.web.CheckListcell"/>
+				</listcell>
+				<listcell>
+					<textbox multiline="true" style="resize: vertical; width:100%" rows="1" bind="comments" onChange=""/>
 				</listcell>
 			</dataitem>
 		</listbox>

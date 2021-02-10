@@ -27,8 +27,12 @@ import com.soffid.iam.addons.recertification.model.RecertifiedInformationSystemE
 import com.soffid.iam.addons.recertification.model.RecertifiedRoleDefinitionEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity;
 import com.soffid.iam.addons.recertification.model.RecertifiedUserEntity;
+import com.soffid.iam.api.AsyncList;
+import com.soffid.iam.api.PagedResult;
+import com.soffid.iam.service.AsyncRunnerService;
 import com.soffid.iam.service.MailService;
 import com.soffid.mda.annotation.Depends;
+import com.soffid.mda.annotation.Nullable;
 import com.soffid.mda.annotation.Operation;
 import com.soffid.mda.annotation.Service;
 
@@ -61,7 +65,8 @@ import es.caib.seycon.ng.servei.UsuariService;
 	RolAccountEntity.class,
 	RecertificationTemplateEntity.class,
 	SoDRuleService.class,
-	MailService.class})
+	MailService.class,
+	AsyncRunnerService.class})
 public abstract class RecertificationService {
 
 	@Operation ( grantees={recertification_manage.class})
@@ -134,6 +139,22 @@ public abstract class RecertificationService {
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	 return null;
 	}
+
+	
+	@Operation ( grantees={recertification_query.class})
+	@Transactional(rollbackFor={Exception.class})
+	public PagedResult<RecertificationProcess> findRecertificationProcessesByTextAndQuery(@Nullable String text, @Nullable String query, @Nullable Integer first, @Nullable Integer pageSize)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	 return null;
+	}
+
+	@Operation ( grantees={recertification_query.class})
+	@Transactional(rollbackFor={Exception.class})
+	public AsyncList<RecertificationProcess> findRecertificationProcessesByTextAndQueryAsync(@Nullable String text, @Nullable String query)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	 return null;
+	}
+
 	@Operation ( grantees={recertification_query.class, tothom.class})
 	@Transactional(rollbackFor={Exception.class})
 	public RecertificationProcess getRecertificationProcess(
@@ -229,6 +250,15 @@ public abstract class RecertificationService {
 	public void check(
 		RecertifiedRole rr, 
 		boolean check)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void check(
+		RecertifiedRole rr, 
+		@Nullable Boolean check,
+		@Nullable String comments)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
 
@@ -333,4 +363,8 @@ public abstract class RecertificationService {
 
 	@Operation ( grantees={recertification_manage.class})
 	public RecertificationTemplate updateTemplate(RecertificationTemplate template) { return null; }
+	
+	@Operation ( grantees={tothom.class})
+	protected List<RecertificationProcess> findActiveRecertificationProcesses () {return null;}
+
 }

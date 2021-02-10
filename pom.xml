@@ -100,9 +100,6 @@
     <module>core</module>
     <module>web</module>
     <module>addon</module>
-    <module>recertification-process</module>
-    <module>bpm-container</module>
-    <module>selfservice</module>
   </modules>
   <dependencies>
     <dependency>
@@ -113,7 +110,7 @@
     </dependency>
   </dependencies>
   <properties>
-    <console.version>2.7.4</console.version>
+    <console.version>3.0.0-SNAPSHOT</console.version>
   </properties>
   <pluginRepositories>
     <pluginRepository>
