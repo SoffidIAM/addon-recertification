@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>recertification</artifactId>
 		<groupId>com.soffid.iam.addon.recertification</groupId>
-		<version>3.0.1-SNAPSHOT</version>
+		<version>3.0.1</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>recertification-core</artifactId>
@@ -243,7 +243,7 @@
 		<dependency>
 			<groupId>com.soffid.iam.console</groupId>
 			<artifactId>iam-core</artifactId>
-			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">${console.version}</version>
+			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">3.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
