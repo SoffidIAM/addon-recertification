@@ -50,7 +50,9 @@
 			  value: rol.groupDescription
 			- name: "${c:l('recertification.User') }"
 			  value: rol.userFullName
+			  template: <A href="${execution.contextPath }/resource/user/user.zul?userName=#{rol.userCode}" target="_blank">#{rol.userFullName}</a>
 			- name: "${c:l('recertification.entitlement') }"
+			  template: <A href='${execution.contextPath }/resource/application/role.zul?filter=name eq "#{rol.roleName}" and system eq "#{role.system}"' target="_blank">#{rol.roleDescription}</a>
 			  value: rol.roleDescription
 			- name: "${c:l('recertification.previousEndorsement') }"
 			  render: previousEndorsement
