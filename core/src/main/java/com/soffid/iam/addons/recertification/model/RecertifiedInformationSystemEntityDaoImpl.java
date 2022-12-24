@@ -70,14 +70,21 @@ public class RecertifiedInformationSystemEntityDaoImpl extends RecertifiedInform
 		{
 			for (RecertifiedRoleDefinitionEntity role: source.getRoles())
 			{
-				total ++;
-				if (role.isCheckedByOwner())
-					done ++;
-				if (source.getProcess().getCisoReview())
-				{
+				if (role.getStep1Users() != null) {
 					total ++;
-					if (role.isCheckedByCiso())
-						done++;
+					if (role.getCheck1() != null) done ++;
+				}
+				if (role.getStep2Users() != null) {
+					total ++;
+					if (role.getCheck2() != null) done ++;
+				}
+				if (role.getStep3Users() != null) {
+					total ++;
+					if (role.getCheck3() != null) done ++;
+				}
+				if (role.getStep4Users() != null) {
+					total ++;
+					if (role.getCheck4() != null) done ++;
 				}
 			}
 			if (total == 0)

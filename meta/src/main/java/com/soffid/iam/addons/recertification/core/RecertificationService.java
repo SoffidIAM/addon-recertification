@@ -37,8 +37,11 @@ import com.soffid.mda.annotation.Operation;
 import com.soffid.mda.annotation.Service;
 
 import es.caib.bpm.servei.BpmEngine;
+import es.caib.seycon.ng.comu.Rol;
+import es.caib.seycon.ng.comu.RolGrant;
 import es.caib.seycon.ng.exception.InternalErrorException;
 import es.caib.seycon.ng.model.RolAccountEntity;
+import es.caib.seycon.ng.model.RolAssociacioRolEntity;
 import es.caib.seycon.ng.model.RolEntity;
 import es.caib.seycon.ng.servei.AccountService;
 import es.caib.seycon.ng.servei.AplicacioService;
@@ -66,6 +69,7 @@ import es.caib.seycon.ng.servei.UsuariService;
 	RecertificationTemplateEntity.class,
 	SoDRuleService.class,
 	MailService.class,
+	RolAssociacioRolEntity.class,
 	AsyncRunnerService.class})
 public abstract class RecertificationService {
 
@@ -210,7 +214,23 @@ public abstract class RecertificationService {
 
 	@Operation ( grantees={recertification_query.class,tothom.class})
 	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedRoleDefinition> getRecertifiedRoleDefinitions(
+		RecertificationProcess rp)
+		throws InternalErrorException {
+	 return null;
+	}
+
+	@Operation ( grantees={recertification_query.class,tothom.class})
+	@Transactional(rollbackFor={Exception.class})
 	public java.util.List<RecertifiedRole> getPendingRecertifiedRoles(
+		RecertificationProcess rp)
+		throws InternalErrorException {
+	 return null;
+	}
+
+	@Operation ( grantees={recertification_query.class,tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public java.util.List<RecertifiedRoleDefinition> getPendingRecertifiedRoleDefinitions(
 		RecertificationProcess rp)
 		throws InternalErrorException {
 	 return null;
@@ -259,6 +279,22 @@ public abstract class RecertificationService {
 		RecertifiedRole rr, 
 		@Nullable Boolean check,
 		@Nullable String comments)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void addDependency(
+		RecertifiedRoleDefinition rr, 
+		RolGrant role)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void removeDependency(
+		RecertifiedRoleDefinition rr, 
+		RolGrant role)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
 
@@ -321,7 +357,7 @@ public abstract class RecertificationService {
 	// Methods for role definition recertification
 	@Operation ( grantees={recertification_query.class,tothom.class})
 	@Transactional(rollbackFor={Exception.class})
-	public java.util.List<RecertifiedRoleDefinition> getRecertifiedRoles(
+	public java.util.List<RecertifiedRoleDefinition> getRecertifiedRoleDefinitions(
 		RecertifiedInformationSystem ris)
 		throws InternalErrorException {
 	 return null;
@@ -329,19 +365,36 @@ public abstract class RecertificationService {
 
 	@Operation ( grantees={tothom.class})
 	@Transactional(rollbackFor={Exception.class})
-	public void checkByAppOwner(
-			RecertifiedRoleDefinition rr, 
+	public void applyRoleDefinitionRecertification(
+		RecertifiedRoleDefinition ru)
+		throws InternalErrorException {
+	}
+	
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void check(
+		RecertifiedRoleDefinition rr, 
 		boolean check)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
 
 	@Operation ( grantees={tothom.class})
 	@Transactional(rollbackFor={Exception.class})
-	public void checkByCiso(
+	public void check(
 		RecertifiedRoleDefinition rr, 
-		boolean check)
+		@Nullable Boolean check,
+		@Nullable String comments)
 		throws es.caib.seycon.ng.exception.InternalErrorException {
 	}
+
+	@Operation ( grantees={tothom.class})
+	@Transactional(rollbackFor={Exception.class})
+	public void delegate(
+		RecertifiedRoleDefinition rr, 
+		String users)
+		throws es.caib.seycon.ng.exception.InternalErrorException {
+	}
+
 
 	@Operation ( grantees={recertification_manage.class, tothom.class})
 	@Transactional(rollbackFor={Exception.class})
@@ -367,4 +420,5 @@ public abstract class RecertificationService {
 	@Operation ( grantees={tothom.class})
 	protected List<RecertificationProcess> findActiveRecertificationProcesses () {return null;}
 
+	
 }

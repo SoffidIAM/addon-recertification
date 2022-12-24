@@ -75,7 +75,7 @@
 	</datanode>
 
 	<datanode name="process">
-		<finder name="group" type="group">
+		<finder name="group" type="group" refreshAfterCommit="true">
 			<ejb-finder
 				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="getRecertifiedGroups">
@@ -83,7 +83,7 @@
 			</ejb-finder>
 		</finder>
 		
-		<finder name="is" type="is">
+		<finder name="is" type="is"  refreshAfterCommit="true">
 			<ejb-finder
 				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
 				method="getRecertifiedInformationSystems">
@@ -99,6 +99,15 @@
 			</ejb-finder>
 		</finder>
 		
+		
+		<finder name="roleDefinition" type="role">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getRecertifiedRoleDefinitions">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
+
 		<custom-attribute name="statusLiteral">
 			if (instance.status ==
 				com.soffid.iam.addons.recertification.common.ProcessStatus.ACTIVE)

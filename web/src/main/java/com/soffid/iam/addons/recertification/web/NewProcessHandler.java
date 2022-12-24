@@ -162,8 +162,13 @@ public class NewProcessHandler extends Window {
 				model.commit();
 				
 				RecertificationService svc = (RecertificationService) new InitialContext().lookup(RecertificationServiceHome.JNDI_NAME);
+
 				svc.startRecertificationProcess(current);
 				model.getJXPathContext().setValue(currentPath+"/status", current.getStatus());
+				DataNodeCollection c = (DataNodeCollection) model.getJXPathContext().getValue(currentPath+"/group");
+				c.refresh();
+				c = (DataNodeCollection) model.getJXPathContext().getValue(currentPath+"/is");
+				c.refresh();
 				setVisible(false);
 			} catch (Exception e) {
 				DataNodeCollection coll2 = (DataNodeCollection) model.getJXPathContext().getValue(currentPath+"/group");

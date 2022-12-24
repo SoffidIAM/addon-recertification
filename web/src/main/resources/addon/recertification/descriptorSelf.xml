@@ -18,8 +18,24 @@
 				<parameter value="${instance}" />
 			</ejb-finder>
 		</finder>
+		<finder name="roleDefinition" type="roleDefinition">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService"
+				method="getPendingRecertifiedRoleDefinitions">
+				<parameter value="${instance}" />
+			</ejb-finder>
+		</finder>
 	</datanode>
 
 	<datanode name="role" transient="true"/>
+	<datanode name="roleDefinition" transient="true">
+		<finder name="role" type="role">
+			<ejb-finder
+				jndi="openejb:/local/soffid.ejb.com.soffid.iam.service.ApplicationService"
+				method="findRoleById">
+				<parameter value="${instance.roleId}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
 
 </zkib-model>

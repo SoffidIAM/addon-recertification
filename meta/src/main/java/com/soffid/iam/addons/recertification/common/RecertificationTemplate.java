@@ -29,4 +29,15 @@ public class RecertificationTemplate {
 	@Attribute(defaultValue = "\"<p>Dear ${fullName}</p><p>Follow this link to complete the <a href='${url}'>review process</a>\"")
 	@Nullable String message;
 	
+
+	@Nullable
+	Integer reminder;
+
+	@Nullable String reminderMessage;
+
+	@Nullable
+	Integer escalation;
+
+	@Nullable String escalationAddress;
+
 }

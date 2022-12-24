@@ -46,7 +46,6 @@ public abstract class RecertifiedUserEntity {
 	@Nullable
 	public java.util.Date step4;
 	
-
 	@Column (name="RUS_STATUS")
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 

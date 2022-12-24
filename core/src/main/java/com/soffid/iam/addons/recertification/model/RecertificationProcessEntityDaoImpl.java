@@ -33,14 +33,21 @@ public class RecertificationProcessEntityDaoImpl extends RecertificationProcessE
 			{
 				for (RecertifiedRoleDefinitionEntity role: is.getRoles())
 				{
-					total ++;
-					if (role.isCheckedByOwner())
-						done ++;
-					if (source.getCisoReview())
-					{
+					if (role.getStep1Users() != null) {
 						total ++;
-						if (role.isCheckedByCiso())
-							done++;
+						if (role.getCheck1() != null) done ++;
+					}
+					if (role.getStep2Users() != null) {
+						total ++;
+						if (role.getCheck2() != null) done ++;
+					}
+					if (role.getStep3Users() != null) {
+						total ++;
+						if (role.getCheck3() != null) done ++;
+					}
+					if (role.getStep4Users() != null) {
+						total ++;
+						if (role.getCheck4() != null) done ++;
 					}
 				}
 			}

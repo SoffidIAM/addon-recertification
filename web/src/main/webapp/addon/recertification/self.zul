@@ -5,6 +5,14 @@
 <frame xmlns:h="http://www.w3.org/1999/xhtml" mold="div" style="position: relative" 
 	use="com.soffid.iam.addons.recertification.web.RecertificateFrameHandler" id="frame"
 	onFinishDelegation="ref:frame.finishDelegation">
+	<style>
+	div.datatable.matrix table.thead td {
+	    padding-left: 0px;
+	    padding-right: 0px;
+	    vertical-align: bottom;
+	    text-align: center;
+	}
+	</style>
 	<datamodel id="model" rootNode="root"
 		src="addon/recertification/descriptorSelf.xml"/>
 	<div sclass="card" id="card">
@@ -39,6 +47,7 @@
 						function previousEndorsement(td,col,value) { td.innerHTML = value.previousEndorsement;}
 						function pendingEndorsement(td,col,value) { td.innerHTML = value.pendingEndorsement;}
 					</script>
+					
 					<datatable id="rolesGrid" dataPath="/listbox:/role" multiselect="true" use="com.soffid.iam.addons.recertification.web.RecertificateDatatable"
 						onAccept="ref:frame.accept"
 						onReject="ref:frame.reject"
@@ -50,9 +59,9 @@
 			  value: rol.groupDescription
 			- name: "${c:l('recertification.User') }"
 			  value: rol.userFullName
-			  template: <A href="${execution.contextPath }/resource/user/user.zul?userName=#{rol.userCode}" target="_blank">#{rol.userFullName}</a>
+			  template: <A class="shylink" href="${execution.contextPath }/resource/user/user.zul?userName=#{rol.userCode}" target="_blank">#{rol.userFullName}</a>
 			- name: "${c:l('recertification.entitlement') }"
-			  template: <A href='${execution.contextPath }/resource/application/role.zul?filter=name eq "#{rol.roleName}" and system eq "#{role.system}"' target="_blank">#{rol.roleDescription}</a>
+			  template: <A class="shylink" href='${execution.contextPath }/resource/application/role.zul?filter=name eq "#{rol.roleName}" and system eq "#{role.system}"' target="_blank">#{rol.roleDescription}</a>
 			  value: rol.roleDescription
 			- name: "${c:l('recertification.previousEndorsement') }"
 			  render: previousEndorsement
@@ -66,6 +75,31 @@
 			  template: <input style="width: 100%; border: none" value="#{newComments}" onInput="zkDatatable.sendClientAction(this,'onComment', [event.target.value]);"/>
 					]]></attribute>
 					</datatable>
+
+					<datatable sclass="matrix datatable" id="roleDefsGrid" dataPath="/listbox:/roleDefinition" multiselect="true" use="com.soffid.iam.addons.recertification.web.RecertificateRoleDefinitionDatatable"
+						onAccept="ref:frame.accept"
+						onReject="ref:frame.reject"
+						onSelect="ref:frame.onSelectRoleDefinition" 
+						onComment="ref:frame.comment"
+						onChangeLevel="ref:frame.onChangeLevel"
+						onMultiSelect="ref:frame.onSelectRoleDefinition">
+						<attribute name="columns"><![CDATA[
+			- name: "${c:l('recertification.entitlement') }"
+			  value: description
+			  template: <a class="shylink" href='${execution.contextPath}/resource/application/role.zul?filter=id eq "#{roleId.toString()}"' target='_blank'>#{description}</a>
+			- name: "${c:l('recertification.previousEndorsement') }"
+			  render: previousEndorsement
+			- name: "${c:l('recertification.pendingEndorsement') }"
+			  template: >-
+			     <div style="display:inline-block" class="custom-checkbox-green custom-checkbox" onClick="zkDatatable.sendClientAction(this,'onAccept');"><input type="checkbox" #{accepted }="#{accepted}"><label/></div>
+			     <div style="display:inline-block" class="custom-checkbox-red custom-checkbox" onClick="zkDatatable.sendClientAction(this,'onReject');"><input type="checkbox" #{rejected }="#{rejected }"><label/></div>
+			  className: statusColumn
+			- name: "${c:l('recertification.comments') }"
+			  value: comments
+			  template: <input style="width: 100%; border: none" value="#{newComments}" onInput="zkDatatable.sendClientAction(this,'onComment', [event.target.value]);"/>
+					]]></attribute>
+					</datatable>
+
 					<div style="text-align: right; width: 100%">
 						<button image="/img/undo-r.svg" label="${c:l('task.filter.lblVolver')}" 
 							onClick="ref:frame.undo" />

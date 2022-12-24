@@ -28,7 +28,8 @@
 			<datatable id="listbox" autocommit="true" 
 				multiselect="true"
 				onMultiSelect="ref:frame.multiSelect"
-				dataPath="/model:/process" maxheight="70vh" sortColumn="0"
+				dataPath="/model:/process" maxheight="70vh" 
+				sortColumn="1" sortDirection="-1"
 				onSelect="ref:frame.showDetails" enablefilter="false">
 				<attribute name="columns"><![CDATA[
 - name: ${c:l('recertification.Name')}
@@ -82,9 +83,6 @@
 							<customfield3 dataType="SEPARATOR" label="${c:l('recertification.GroupMembers') }" />
 							<datatable dataPath="group:/users"  id="listboxUsers">
 								<attribute name="columns"><![CDATA[
-	- name: ${c:l('recertification.Active')}
-	  template #{activeAccount ? "${c:l('org.zkoss.mesg.Messages:YES') }": ${c:l('org.zkoss.mesg.Messages:NO') } };
-	  value: activeAccount
 	- name: ${c:l('recertification.User')}
 	  value: user
 	- name: ${c:l('recertification.CreationDate')}
@@ -162,6 +160,41 @@
 				visible="false"
 				id="delegateButton" 
 				onClick="ref:rolesWindow.delegate"/>
+		</div>
+	</window>
+
+	<window title="${c:l('recertification.details') }" id="roleDefWindow" visible="false" position="top, center" 
+		use="com.soffid.iam.addons.recertification.web.RoleRecertificationDetailsHandler"
+		onFinishDelegation="ref:roleDefWindow.finishDelegation">
+		<script> 
+			function previousEndorsement(td,col,value) { td.innerHTML = value.previousEndorsement;}
+			function pendingEndorsement(td,col,value) { td.innerHTML = value.pendingEndorsement;}
+		</script>
+		<datatable id="rolesGrid" dataPath="/listbox:/roleDefinition" multiselect="true" use="com.soffid.iam.addons.recertification.web.RoleDefinitionsDatatable"
+			onSelect="ref:roleDefWindow.onSelect" 
+			onMultiSelect="ref:roleDefWindow.onSelect">
+			<attribute name="columns"><![CDATA[
+- name: "${c:l('com.soffid.iam.api.Role.name') }"
+  value: roleName
+- name: "${c:l('com.soffid.iam.api.Role.system') }"
+  value: system
+- name: "${c:l('recertification.entitlement') }"
+  value: description
+- name: "${c:l('recertification.previousEndorsement') }"
+  render: previousEndorsement
+- name: "${c:l('recertification.pendingEndorsement') }"
+  render: pendingEndorsement
+- name: "${c:l('recertification.comments') }"
+  value: comments
+		]]></attribute>
+		</datatable>
+		<div style="text-align: right; width: 100%">
+			<button image="/img/undo-r.svg" label="${c:l('task.filter.lblVolver')}" 
+				onClick="ref:roleDefWindow.back" />
+			<button image="/img/user-r.svg" style="float: left" label="${c:l('seleccionUsuario.btnDelegar')}" 
+				visible="false"
+				id="delegateButton" 
+				onClick="ref:roleDefWindow.delegate"/>
 		</div>
 	</window>
 
