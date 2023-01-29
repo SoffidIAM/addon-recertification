@@ -21,6 +21,7 @@ import com.soffid.iam.web.popup.IdentityHandler;
 import es.caib.seycon.ng.exception.InternalErrorException;
 import es.caib.zkib.component.DataTable;
 import es.caib.zkib.datasource.XPathUtils;
+import es.caib.zkib.zkiblaf.Missatgebox;
 
 public class RecertificationDetailsHandler extends Window {
 	public void back (Event event) {
@@ -37,11 +38,34 @@ public class RecertificationDetailsHandler extends Window {
 	public void delegate(Event event) throws IOException {
 		DataTable dt = (DataTable) getFellow("rolesGrid");
 		int[] selected = dt.getSelectedIndexes();
-		IdentityHandler.selectIdentity(Labels.getLabel("recertification.SelectUser"), 
-				new com.soffid.iam.web.component.Identity.Type[] {
-						com.soffid.iam.web.component.Identity.Type.USER
-				}, 
-				this, "onFinishDelegation");
+		boolean any = false;
+		try {
+			for (int row: selected) {
+				dt.setSelectedIndex(row);
+				RecertifiedRole r = (RecertifiedRole) XPathUtils.eval(dt, "instance");
+				for (int j = 1; j <= 4; j++) {
+					String usersOrig = (String) XPathUtils.eval(dt, "step"+j+"Users");
+					if ( usersOrig == null) break;
+					String author = (String) XPathUtils.eval(dt, "step"+j+"Author");
+					if (author == null) {
+						any = true; 
+						break;
+					}
+				}
+			}
+		} finally {
+			dt.setSelectedIndex(selected);
+		}
+
+		if (!any) {
+			Missatgebox.avis(Labels.getLabel("recertification.nothingToDelegate"));
+		} else {
+			IdentityHandler.selectIdentity(Labels.getLabel("recertification.SelectUser"), 
+					new com.soffid.iam.web.component.Identity.Type[] {
+							com.soffid.iam.web.component.Identity.Type.USER
+					}, 
+					this, "onFinishDelegation");
+		}
 	}
 
 	public void finishDelegation(Event event) throws NamingException, InternalErrorException {
@@ -59,16 +83,19 @@ public class RecertificationDetailsHandler extends Window {
 				for (int row: rows) {
 					dt.setSelectedIndex(row);
 					RecertifiedRole r = (RecertifiedRole) XPathUtils.eval(dt, "instance");
+					boolean any = false;
 					for (int j = 1; j <= 4; j++) {
 						String usersOrig = (String) XPathUtils.eval(dt, "step"+j+"Users");
 						if ( usersOrig == null) break;
 						String author = (String) XPathUtils.eval(dt, "step"+j+"Author");
 						if (author == null) {
 							XPathUtils.setValue(dt,  "step"+j+"Users", users.toString());
+							any = true;
 							break;
 						}
 					}
-					svc.delegate(r, users.toString());
+					if (any)
+						svc.delegate(r, users.toString());
 				}
 			} finally {
 				dt.setSelectedIndex(rows);

@@ -20,7 +20,7 @@
 			<div use="com.soffid.iam.web.component.NavigationBar" frame="frame">
 			</div>
 			<datatable id="listbox" autocommit="true" 
-				multiselect="true"
+				multiselect="false"
 				onMultiSelect="ref:frame.multiSelect"
 				dataPath="/model:/process" maxheight="70vh" sortColumn="0"
 				onSelect="ref:frame.showDetails" enablefilter="false">
