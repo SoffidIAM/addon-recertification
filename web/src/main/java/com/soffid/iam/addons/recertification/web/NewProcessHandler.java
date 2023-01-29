@@ -169,6 +169,7 @@ public class NewProcessHandler extends Window {
 				c.refresh();
 				c = (DataNodeCollection) model.getJXPathContext().getValue(currentPath+"/is");
 				c.refresh();
+				model.commit();
 				setVisible(false);
 			} catch (Exception e) {
 				DataNodeCollection coll2 = (DataNodeCollection) model.getJXPathContext().getValue(currentPath+"/group");
