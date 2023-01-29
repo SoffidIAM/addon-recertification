@@ -62,6 +62,7 @@
 				<form2 id="form" onChangeXPath="ref:frame.onChangeForm"
 					dataPath="/listbox:/." width="100%">
 					<customfield3 bind="@name" label="${c:l('recertification.Name') }" readonly='true' dataType='STRING' disabled="true"/>	
+					<customfield3 bind="@template" label="${c:l('recertification.template') }" readonly='true' dataType='STRING' disabled="true"/>	
 					<customfield3 bind="@startDate" label="${c:l('recertification.StartDate') }" readonly='true' dataType='DATE_TIME'/>	
 					<customfield3 bind="@finishDate" label="${c:l('recertification.FinishDate') }" readonly='true' dataType='DATE_TIME'/>	
 					<customfield3 bind="@statusLiteral" label="${c:l('recertification.Status2') }" readonly='true' dataType='STRING' disabled="true"/>	
