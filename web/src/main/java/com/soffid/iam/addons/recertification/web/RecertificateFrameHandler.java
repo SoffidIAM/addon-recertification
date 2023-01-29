@@ -234,7 +234,7 @@ public class RecertificateFrameHandler extends FrameHandler {
 					dt.setSelectedIndex(rows);
 					dt.deleteSelectedItem();
 				} finally {
-					dt.setSelectedIndex(rows);
+					dt.setSelectedIndex(new int[0]);
 				}
 			}
 			else {
@@ -263,7 +263,7 @@ public class RecertificateFrameHandler extends FrameHandler {
 					dt.setSelectedIndex(rows);
 					dt.deleteSelectedItem();
 				} finally {
-					dt.setSelectedIndex(rows);
+					dt.setSelectedIndex(new int[0]);
 				}
 				
 			}
