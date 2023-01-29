@@ -447,12 +447,12 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					Security.nestedLogoff();
 				}
 				
-				if ( rre.getUser() != null)
-					checkUserStatus(rre.getUser());
-				if ( rre.getInformationSystem() != null)
-					checkISStatus(rre.getInformationSystem());
 			}
 		}
+		if ( rre.getUser() != null)
+			checkUserStatus(rre.getUser());
+		if ( rre.getInformationSystem() != null)
+			checkISStatus(rre.getInformationSystem());
 		if (!check)
 		{
 			Security.nestedLogin(Security.getCurrentAccount(), new String[] {
@@ -477,23 +477,34 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	}
 
 	public void checkUserStatus(RecertifiedUserEntity u) {
-		boolean done = true;
+		int total = 0;
+		int done = 0;
 		for ( RecertifiedRoleEntity rre2: u.getRoles())
 		{
-			if ( ! isFinished(rre2))
+			total ++;
+			if (isFinished(rre2))
 			{
-				done = false;
-				break;
+				done ++;
 			}
 		}
-		if (done)
+		if (total == 0) {
+			u.setStatus(ProcessStatus.CANCELLED);
+			u.setPctDone(100);
+		}
+		else if (done == total)
 		{
 			u.setStatus(ProcessStatus.FINISHED);
-			u.setStep1(new Date());
-			getRecertifiedUserEntityDao().update(u);
-			RecertifiedGroupEntity g = u.getGroup();
-			checkGroupStatus(g);
+			u.setPctDone(100);
 		}
+		else
+		{
+			u.setStatus(ProcessStatus.ACTIVE);
+			u.setPctDone(100 * done / total);
+		}
+		getRecertifiedUserEntityDao().update(u);
+		RecertifiedGroupEntity g = u.getGroup();
+		if (u.getStatus() == ProcessStatus.FINISHED)
+			checkGroupStatus(g);
 	}
 
 	public void checkISStatus(RecertifiedInformationSystemEntity is) {
@@ -986,6 +997,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					rue.setGroup(rge);
 					rue.setStatus(ProcessStatus.ACTIVE);
 					rue.setUser(ue);
+					rue.setPctDone(0);
 					getRecertifiedUserEntityDao().create(rue);
 					rge.getUsers().add(rue);
 					if (rpe.getWorkflowId() != null)

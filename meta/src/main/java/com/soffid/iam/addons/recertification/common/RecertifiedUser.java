@@ -19,16 +19,7 @@ public class RecertifiedUser {
 	public java.util.Calendar createdOn;
 
 	@Nullable
-	public java.util.Calendar userReview;
-
-	@Nullable
-	public java.util.Calendar bossReview;
-
-	@Nullable
-	public java.util.Calendar appOwnerReview;
-
-	@Nullable
-	public java.util.Calendar cisoReview;
+	public java.lang.Integer pctDone;
 
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 

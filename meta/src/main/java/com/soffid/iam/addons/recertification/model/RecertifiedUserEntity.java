@@ -30,22 +30,6 @@ public abstract class RecertifiedUserEntity {
 	@Nullable
 	public java.util.Date createdOn;
 
-	@Column (name="RUS_USERRW")
-	@Nullable
-	public java.util.Date step1;
-
-	@Column (name="RUS_BOSSRW")
-	@Nullable
-	public java.util.Date step2;
-
-	@Column (name="RUS_APOWRW")
-	@Nullable
-	public java.util.Date step3;
-
-	@Column (name="RUS_CISORW")
-	@Nullable
-	public java.util.Date step4;
-	
 	@Column (name="RUS_STATUS")
 	public com.soffid.iam.addons.recertification.common.ProcessStatus status;
 
@@ -57,6 +41,9 @@ public abstract class RecertifiedUserEntity {
 
 	@Column (name="RUS_USER")
 	public es.caib.seycon.ng.model.UsuariEntity user;
+
+	@Nullable
+	public java.lang.Integer pctDone;
 
 	@Column (name="RUS_WORKID")
 	@Nullable

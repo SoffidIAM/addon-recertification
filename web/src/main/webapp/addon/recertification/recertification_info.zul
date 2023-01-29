@@ -89,22 +89,8 @@
 	  template: #{createdOn_date}
 	- name: ${c:l('recertification.Status2')}
 	  value: statusLiteral
-	- name: ${c:l('recertification.step1')}
-	  value: step1Date
-	  template: #{step1Date_date}
-	  className: dateColumn
-	- name: ${c:l('recertification.step2')}
-	  value: step2Date
-	  template: #{step2Date_date}
-	  className: dateColumn
-	- name: ${c:l('recertification.step3')}
-	  value: step3Date
-	  template: #{step3Date_date}
-	  className: dateColumn
-	- name: ${c:l('recertification.step4')}
-	  value: step4Date
-	  template: #{step4Date_date}
-	  className: dateColumn
+	- name: ${c:l('recertification.done')}
+	  value: pctDone
 								]]></attribute>
 							</datatable>
 						</div>
