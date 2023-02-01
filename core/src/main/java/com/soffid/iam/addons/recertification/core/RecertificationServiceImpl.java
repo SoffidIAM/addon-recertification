@@ -442,38 +442,20 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
 					RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
 					ra.setCertificationDate(new Date());
+					if (!check)
+					{
+						ra.setEndDate(new Date());
+					}
 					getApplicationService().update(ra);
 				} finally {
 					Security.nestedLogoff();
 				}
-				
 			}
 		}
 		if ( rre.getUser() != null)
 			checkUserStatus(rre.getUser());
 		if ( rre.getInformationSystem() != null)
 			checkISStatus(rre.getInformationSystem());
-		if (!check)
-		{
-			Security.nestedLogin(Security.getCurrentAccount(), new String[] {
-					Security.AUTO_USER_QUERY+Security.AUTO_ALL,
-					Security.AUTO_USER_UPDATE+Security.AUTO_ALL,
-					Security.AUTO_USER_ROLE_DELETE+Security.AUTO_ALL,
-					Security.AUTO_USER_ROLE_CREATE+Security.AUTO_ALL,
-					Security.AUTO_USER_ROLE_QUERY+Security.AUTO_ALL
-				});
-			try {
-				RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
-				RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
-				if (ra != null && ra.isEnabled()) {
-					ra.setEndDate(new Date());
-					getApplicationService().update(ra);
-				}
-			} finally {
-				Security.nestedLogoff();
-			}
-			
-		}
 	}
 
 	public void checkUserStatus(RecertifiedUserEntity u) {

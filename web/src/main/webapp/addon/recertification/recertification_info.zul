@@ -202,7 +202,7 @@
 			
 				<div style="text-align: right; width: 100%">
 					<button image="/img/undo-r.svg" label="${c:l('common.undo')}" onClick="ref:newProcessWindow.undoAdd" />
-					<button image="/img/next-r.svg" label="${c:l('user-roles.selectDomain')}" onClick="ref:newProcessWindow.selectTemplate"/>
+					<button image="/img/next-r.svg" label="${c:l('aplicaIntranet_autoritzacio.Next')}" onClick="ref:newProcessWindow.selectTemplate"/>
 				</div>
 			</div>
 			<div id="step2">
@@ -212,7 +212,7 @@
 				<div style="text-align: right; width: 100%">
 					<button image="/img/undo-r.svg" label="${c:l('task.filter.lblVolver')}" 
 						onClick="ref:newProcessWindow.back" />
-					<button image="/img/next-r.svg" label="${c:l('user-groups.setProperties')}" onClick="ref:newProcessWindow.selectGroups" id="b1"/>
+					<button image="/img/next-r.svg" label="${c:l('aplicaIntranet_autoritzacio.Next')}" onClick="ref:newProcessWindow.selectGroups" id="b1"/>
 				</div>
 			</div>
 			<div id="step3">
