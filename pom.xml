@@ -5,14 +5,14 @@
   <artifactId>recertification</artifactId>
   <packaging>pom</packaging>
   <name>Recertification process</name>
-  <version>3.0.3</version>
+  <version>3.0.4-SNAPSHOT</version>
   <description>SOFFID IAM Recertification addon</description>
   <prerequisites>
     <maven>2.0.1</maven>
   </prerequisites>
   <scm>
 	<connection>scm:git:ssh://git@github.com/SoffidIAM/addon-recertification.git</connection>
-    <tag>version-3.0.3</tag>
+    <tag>HEAD</tag>
   </scm>
   <licenses>
     <license>
