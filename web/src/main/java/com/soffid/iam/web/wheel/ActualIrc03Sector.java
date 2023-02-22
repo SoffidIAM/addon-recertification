@@ -27,7 +27,10 @@ public class ActualIrc03Sector {
 	}
 	
 	public boolean isDone() throws InternalErrorException, NamingException {
-		return ! service.findTemplates().isEmpty();
+		if (service.findTemplates().isEmpty()) 
+			return false;
+		
+		return service.findRecertificationProcessesByTextAndQuery(null, null, 0, 1).getResources().isEmpty();
 	}
 	
 	public void activate() {
@@ -40,7 +43,7 @@ public class ActualIrc03Sector {
 				template.setFilterScript("// Select only permissions with a risk category\n"
 						+ "return grant.sodRisk != null &&\n"
 						+ "  grant.sodRisk != es.caib.seycon.ng.comu.SoDRisk.SOD_NA;");
-				template.setStep2Script("// First the manager of the group manager\n"
+				template.setStep1Script("// First the manager of the group manager\n"
 						+ "userGroupCode == null ? \"SOFFID_ADMIN\": \"SOFFID_APP_OWNER\"+grant.userGroupCode");
 				template.setStep2Script("// Next the manager of the application owner\n"
 						+ "\"SOFFID_GROUP_MGR/\"+grant.informationSystemName");
@@ -52,7 +55,7 @@ public class ActualIrc03Sector {
 				template.setType(RecertificationType.ENTITLEMENTS);
 				template.setFilterScript("// Select any permission\n"
 						+ "true;");
-				template.setStep2Script("// First the manager of the group manager\n"
+				template.setStep1Script("// First the manager of the group manager\n"
 						+ "userGroupCode == null ? \"SOFFID_ADMIN\": \"SOFFID_APP_OWNER\"+grant.userGroupCode");
 				template.setStep2Script("// Next the manager of the application owner\n"
 						+ "\"SOFFID_GROUP_MGR/\"+grant.informationSystemName");
