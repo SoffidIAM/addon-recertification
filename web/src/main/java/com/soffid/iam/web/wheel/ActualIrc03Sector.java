@@ -27,7 +27,8 @@ public class ActualIrc03Sector {
 	}
 	
 	public boolean isDone() throws InternalErrorException, NamingException {
-		if (service.findTemplates().isEmpty()) 
+		if (service.findTemplates().isEmpty() &&
+				service.findRecertificationProcessesByTextAndQuery(null, null, null, 1).getResources().isEmpty())  
 			return false;
 		
 		return service.findRecertificationProcessesByTextAndQuery(null, null, 0, 1).getResources().isEmpty();
