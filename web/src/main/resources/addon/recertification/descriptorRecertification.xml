@@ -109,21 +109,7 @@
 		</finder>
 
 		<custom-attribute name="statusLiteral">
-			if (instance.status ==
-				com.soffid.iam.addons.recertification.common.ProcessStatus.ACTIVE)
-				return "Active";
-
-			if (instance.status ==
-				com.soffid.iam.addons.recertification.common.ProcessStatus.FINISHED)
-				return "Finished";
-
-			if (instance.status ==
-				com.soffid.iam.addons.recertification.common.ProcessStatus.CANCELLED)
-				return "Cancelled";
-
-			if (instance.status ==
-				com.soffid.iam.addons.recertification.common.ProcessStatus.PREPARATION)
-				return "Preparation";
+		    return com.soffid.iam.web.dsp.ZulFns.getEnumerationLabel(instance.status);
 		</custom-attribute>
 		<ejb-handler jndi="openejb:/local/soffid.ejb.com.soffid.iam.addons.recertification.core.RecertificationService">
 			<update-method method="update" returnBean="true">
