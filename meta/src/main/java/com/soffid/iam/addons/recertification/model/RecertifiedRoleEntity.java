@@ -102,6 +102,15 @@ public abstract class RecertifiedRoleEntity {
 	@Column (name="RRO_COMMEN", length=1024) @Nullable
 	public String comments;
 
+	@Column (name="RRO_DATASS") @Nullable
+	public Date assignationDate;
+
+	@Column (name="RRO_DATESC") @Nullable
+	public Date escalationDate;
+
+	@Column (name="RRO_DATREM") @Nullable
+	public Date reminderDate;
+	
 	@DaoFinder("select a "
 			+ "from com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity as a "
 			+ "where a.user.group.process.id=:id")
@@ -116,4 +125,5 @@ public abstract class RecertifiedRoleEntity {
 			+ "from com.soffid.iam.addons.recertification.model.RecertifiedRoleEntity as a "
 			+ "where a.user.group.process.id=:id")
 	Collection<RecertifiedRoleEntity> findByProcessId (long id) { return null; }
+
 }

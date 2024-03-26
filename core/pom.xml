@@ -235,7 +235,7 @@
 		<dependency>
 			<groupId>com.soffid.iam.console</groupId>
 			<artifactId>iam-core</artifactId>
-			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">3.0.0</version>
+			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">3.5.9</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -266,7 +266,7 @@
 		<dependency>
 			<groupId>com.soffid.iam.sync</groupId>
 			<artifactId>syncserver</artifactId>
-			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">2.7.0</version>
+			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">3.5.4</version>
 			<scope>provided</scope>
 			<optional>true</optional>
 		</dependency>

@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>com.soffid.iam.console</groupId>
 			<artifactId>iam-common</artifactId>
-			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">3.0.0</version>
+			<version xmlns:maven="http://maven.apache.org/POM/4.0.0">3.5.9</version>
 		</dependency>
 	</dependencies>
 </project>

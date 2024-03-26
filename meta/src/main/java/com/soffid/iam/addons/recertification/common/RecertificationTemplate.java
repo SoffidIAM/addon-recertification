@@ -33,11 +33,16 @@ public class RecertificationTemplate {
 	@Nullable
 	Integer reminder;
 
+	@Attribute(defaultValue = "\"<p>Dear ${fullName}</p><p>This is a reminder to complete the <a href='${url}'>review process</a>\"")
 	@Nullable String reminderMessage;
 
 	@Nullable
 	Integer escalation;
 
 	@Nullable String escalationAddress;
+	
+	@Attribute(defaultValue = "\"<p>Dear ${fullName}</p><p>Some recerification process has reached the You have  this link to complete the <a href='${url}'>review process</a>\"")
+	@Nullable String escalationMessage;
+
 
 }

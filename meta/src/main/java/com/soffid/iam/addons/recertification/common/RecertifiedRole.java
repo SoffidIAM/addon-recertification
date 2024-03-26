@@ -94,4 +94,16 @@ public class RecertifiedRole {
 	public String newComments;
 
 	public boolean finished;
+
+	@Nullable
+	public Date assignationDate;
+
+	@Nullable
+	public Date escalationDate;
+
+	@Nullable
+	public Date reminderDate;
+
+	@Nullable
+	public Date limitDate;
 }

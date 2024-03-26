@@ -36,6 +36,7 @@ import com.soffid.iam.web.popup.IdentityHandler;
 
 import es.caib.seycon.ng.exception.InternalErrorException;
 import es.caib.zkib.component.DataTable;
+import es.caib.zkib.component.Div;
 import es.caib.zkib.datamodel.DataModelCollection;
 import es.caib.zkib.datamodel.DataModelNode;
 import es.caib.zkib.datamodel.DataNode;
@@ -61,7 +62,11 @@ public class RecertificateFrameHandler extends FrameHandler {
 	public void onSelectRole(Event event) {
 		DataTable dt = (DataTable) getFellow("rolesGrid");
 		Component c = getFellow("delegateButton");
-		c.setVisible(dt.getSelectedIndexes() != null && dt.getSelectedIndexes().length > 0);
+		final boolean selected = dt.getSelectedIndexes() != null && dt.getSelectedIndexes().length > 0;
+		c.setVisible(selected);
+		Div data = (Div) getFellow("dades");
+		data.setSclass(dt.getSelectedIndexes() != null && dt.getSelectedIndexes().length == 1? 
+				"data_open": "data_closed");
 	}
 
 	public void onSelectRoleDefinition(Event event) {
@@ -89,8 +94,8 @@ public class RecertificateFrameHandler extends FrameHandler {
 
 	public void reject(Event event) {
 		Missatgebox.confirmaYES_NO(Labels.getLabel("recertification.confirm"), (ev2)->{
-			DataTable dt;
 			RecertificationType type = (RecertificationType) XPathUtils.eval(getForm(), "type");
+			DataTable dt;
 			if (type == RecertificationType.ROLEDEFINITIONS) 
 				dt = (DataTable) getFellow("roleDefsGrid");
 			else
@@ -449,6 +454,12 @@ public class RecertificateFrameHandler extends FrameHandler {
 					menu.detach();
 			}
 		});
+	}
+
+	@Override
+	public void afterCompose() {
+		super.afterCompose();
+		
 	}
 }
 

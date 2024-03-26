@@ -5,6 +5,7 @@
 //
 
 package com.soffid.iam.addons.recertification.core;
+import java.io.PrintWriter;
 import java.util.List;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -420,5 +421,6 @@ public abstract class RecertificationService {
 	@Operation ( grantees={tothom.class})
 	protected List<RecertificationProcess> findActiveRecertificationProcesses () {return null;}
 
+	protected void triggerScalations(PrintWriter log) {}
 	
 }

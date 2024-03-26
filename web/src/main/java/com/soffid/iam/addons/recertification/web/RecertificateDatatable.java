@@ -63,6 +63,13 @@ public class RecertificateDatatable extends DataTable {
 				addPending(sb, rr.getStep3Author(), rr.getStep3Users() );
 				addPending(sb, rr.getStep4Author(), rr.getStep4Users() );
 				o.put("pendingEndorsement", sb.toString());
+				
+				if (rr.getAssignationDate() != null) {
+					if (System.currentTimeMillis() > rr.getAssignationDate().getTime())
+						o.put("$class", "red bold");
+					if (System.currentTimeMillis() > rr.getAssignationDate().getTime() - 24L * 360000L )
+						o.put("$class", "red");
+				}
 			}			
 		}
 		return o;

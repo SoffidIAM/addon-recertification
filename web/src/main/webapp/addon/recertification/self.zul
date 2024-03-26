@@ -12,6 +12,34 @@
 	    vertical-align: bottom;
 	    text-align: center;
 	}
+	div.datatable a {
+		color: inherit;
+		font-weight: inherit;
+	}
+	
+	div.data_left {
+		width: 100%;
+	}
+	div.data_right {
+		display: none;
+	}
+	
+	@media only screen and (min-width: 1400px) {
+		div.data_open div.data_left {
+			width: calc(100% - 440px);
+			display: inline-block;
+			vertical-align: top;
+		}
+		
+		div.data_open div.data_right {
+			width: 410px;
+			margin-left: 30px;
+			display: inline-block;
+			vertical-align: top;
+			border: solid 3px #e0e0e0;
+			border-radius: 6px;
+		}
+	}
 	</style>
 	<datamodel id="model" rootNode="root"
 		src="addon/recertification/descriptorSelf.xml"/>
@@ -35,20 +63,21 @@
   			</datatable>
 		</div>
 		<div sclass="card__face card__face--back">
-			<div id="dades">
+			<div id="dades" sclass="data_closed">
 				<div use="com.soffid.iam.web.component.NavigationBar" frame="frame" lastAction="ref:frame.confirmApply">
 					<pager datatable="listbox"/>
 					
 					<databutton image="/img/save.svg" label="${c:l('common.apply') }" datamodel="/model" onClick="ref:frame.applyNoClose" onlyIcon="true"/>
 				</div>
-				<form2 id="form" onChangeXPath="ref:frame.onChangeForm"
-					dataPath="/listbox:/." width="100%">
+				<form2 id="form" sclass="data_left" onChangeXPath="ref:frame.onChangeForm"
+					dataPath="/listbox:/.">
 					<script> 
 						function previousEndorsement(td,col,value) { td.innerHTML = value.previousEndorsement;}
 						function pendingEndorsement(td,col,value) { td.innerHTML = value.pendingEndorsement;}
 					</script>
 					
-					<datatable id="rolesGrid" dataPath="/listbox:/role" multiselect="true" use="com.soffid.iam.addons.recertification.web.RecertificateDatatable"
+					<datatable id="rolesGrid" dataPath="/listbox:/role" multiselect="true" 
+						use="com.soffid.iam.addons.recertification.web.RecertificateDatatable"
 						onAccept="ref:frame.accept"
 						onReject="ref:frame.reject"
 						onSelect="ref:frame.onSelectRole" 
@@ -65,6 +94,10 @@
 			  value: rol.roleDescription
 			- name: "${c:l('recertification.previousEndorsement') }"
 			  render: previousEndorsement
+			- name: "${c:l('recertification.limit') }"
+			  value: limitDate
+			  template: #{limitDate_date}
+			  className: statusColumn
 			- name: "${c:l('recertification.pendingEndorsement') }"
 			  template: >-
 			     <div style="display:inline-block" class="custom-checkbox-green custom-checkbox" onClick="zkDatatable.sendClientAction(this,'onAccept');"><input type="checkbox" #{accepted }="#{accepted}"><label/></div>
@@ -94,6 +127,10 @@
 			     <div style="display:inline-block" class="custom-checkbox-green custom-checkbox" onClick="zkDatatable.sendClientAction(this,'onAccept');"><input type="checkbox" #{accepted }="#{accepted}"><label/></div>
 			     <div style="display:inline-block" class="custom-checkbox-red custom-checkbox" onClick="zkDatatable.sendClientAction(this,'onReject');"><input type="checkbox" #{rejected }="#{rejected }"><label/></div>
 			  className: statusColumn
+			- name: "${c:l('recertification.limit') }"
+			  value: limitDate
+			  template: #{limitDate_date}
+			  className: statusColumn
 			- name: "${c:l('recertification.comments') }"
 			  value: comments
 			  template: <input style="width: 100%; border: none" value="#{newComments}" onInput="zkDatatable.sendClientAction(this,'onComment', [event.target.value]);"/>
@@ -111,7 +148,29 @@
 							onClick="ref:frame.delegate"/>
 					</div>
 				</form2>
+				<div  sclass="data_right">
+					<customfield3 dataType="SEPARATOR" label="${c:l('agents.zul.Usuari') }"/>
+					<standardfield3 bind="rolesGrid:/user/userName" 
+						attribute="com.soffid.iam.api.User.userName" readonly="true" />
+					<standardfield3 bind="rolesGrid:/user/fullName" 
+						attribute="com.soffid.iam.api.User.fullName" readonly="true" />
+					<standardfield3 bind="rolesGrid:/user/primaryGroup" 
+						attribute="com.soffid.iam.api.User.primaryGroup" readonly="true" />
+					<customfield3 dataType="SEPARATOR" label="${c:l('com.soffid.iam.api.Audit.account') }"/>
+					<standardfield3 bind="rolesGrid:/account/name" attribute="com.soffid.iam.api.Account.name" readonly="true" />
+					<standardfield3 bind="rolesGrid:/account/lastLogin" 
+						attribute="com.soffid.iam.api.Account.lastLogin" readonly="true" />
+					<standardfield3 bind="rolesGrid:/account/lastPasswordSet" 
+						attribute="com.soffid.iam.api.Account.lastPasswordSet" readonly="true" />
+					<standardfield3 bind="rolesGrid:/account/lastChange" 
+						attribute="com.soffid.iam.api.Account.lastChange" readonly="true" />
+					<div style="width:100%">
+						<button style="float:right" label="${c:l('recertification.openUser') }"
+							onClick="ref:frame.openUser"/>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
+	<debugwindow/>
 </frame>

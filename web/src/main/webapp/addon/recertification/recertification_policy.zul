@@ -92,8 +92,12 @@
 						label="${c:l('recertification.reminderMesage') }"/>
 					<customfield3 dataType="NUMBER" bind="escalation"
  						label="${c:l('recertification.escalation') }"/>
-					<customfield3 dataType="EMAIL" bind="escalationAddress"
- 						label="${c:l('recertification.escalationEmail') }"/>
+					<customfield3 dataType="STRING" bind="escalationAddress" multiline="true"
+ 						label="${c:l('recertification.escalationEmail') }" selectIcon="/img/pencil.svg" 
+						javascript='{"serviceLocator":"com.soffid.iam.ServiceLocator","account":"com.soffid.iam.api.Account","role":"com.soffid.iam.api.Role","grant":"com.soffid.iam.api.RoleAccount"}' />
+					<customfield3 dataType="HTML" bind="escalationMessage" multiline="true" maxlength="10000"
+						 selectIcon="/img/pencil.svg" 
+						label="${c:l('recertification.escalationMessage') }"/>
 					<div style="text-align: right; width: 100%">
 						<databutton image="/img/undo-r.svg" label="${c:l('common.undo')}" datamodel="/model" onClick="ref:frame.undo">
 						</databutton>

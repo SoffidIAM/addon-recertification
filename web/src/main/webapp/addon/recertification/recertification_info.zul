@@ -6,6 +6,20 @@
 	use="com.soffid.iam.addons.recertification.web.CampaignFrameHandler" id="frame">
 	<datamodel id="model" rootNode="root"
 		src="addon/recertification/descriptorRecertification.xml"/>
+	<style>
+		div.datatable table.tbody tr td.progressColumn {
+			width: 100px;
+			text-align: left;
+			background-color: white;
+		}
+		div.datatable div.pct {
+			background-color: #e0e0e0;  
+			color: black; 
+			display:inline-block; 
+			overflow-x: visible; 
+			text-wrap: nowrap
+		}
+	</style>
 	<div sclass="card" id="card">
 		<div sclass="card__face card__face--front">
 
@@ -75,7 +89,9 @@
 - name: ${c:l('recertification.Status2')}
   value: statusLiteral
 - name: ${c:l('recertification.done')}
+  className: progressColumn
   value: pctDone
+  template: <div class="pct" style="width: #{pctDone == null? "": new String(pctDone)}%">#{pctDone == null? "": new String(pctDone)}</div>
 							]]></attribute>
 						</datatable>
 						<div id="usersSection">
@@ -90,7 +106,9 @@
 	- name: ${c:l('recertification.Status2')}
 	  value: statusLiteral
 	- name: ${c:l('recertification.done')}
+	  className: progressColumn
 	  value: pctDone
+	  template: <div class="pct" style="width: #{pctDone == null? "": new String(pctDone)}%">#{pctDone == null? "": new String(pctDone)}</div>
 								]]></attribute>
 							</datatable>
 						</div>
@@ -105,6 +123,8 @@
   value: statusLiteral
 - name: ${c:l('recertification.done')}
   value: pctDone
+  className: progressColumn
+  template: <div class="pct" style="width: #{pctDone == null? "": new String(pctDone)}%">#{pctDone == null? "": new String(pctDone)}</div>
 							]]></attribute>
 						</datatable>
 					</div>
@@ -134,6 +154,18 @@
   render: previousEndorsement
 - name: "${c:l('recertification.pendingEndorsement') }"
   render: pendingEndorsement
+- name: "${c:l('recertification.reminded') }"
+  value: reminderDate
+  template: #{reminderDate_date}
+  className: statusColumn
+- name: "${c:l('recertification.escalated') }"
+  value: escalationDate
+  template: #{escalationDate_date}
+  className: statusColumn
+- name: "${c:l('recertification.limit') }"
+  value: limitDate
+  template: #{limitDate_date}
+  className: statusColumn
 - name: "${c:l('recertification.comments') }"
   value: comments
 		]]></attribute>
@@ -166,9 +198,24 @@
 - name: "${c:l('recertification.entitlement') }"
   value: description
 - name: "${c:l('recertification.previousEndorsement') }"
-  render: previousEndorsement
-- name: "${c:l('recertification.pendingEndorsement') }"
-  render: pendingEndorsement
+  value: previousEndorsement
+  template: #{previousEndorsement}
+- name: "${c:l('recertification.assigned') }"
+  value: assignationDate
+  template: #{assignationDate_date}
+  className: statusColumn
+- name: "${c:l('recertification.reminded') }"
+  value: remindernDate
+  template: #{reminderDate_date}
+  className: statusColumn
+- name: "${c:l('recertification.escalated') }"
+  value: escalationDate
+  template: #{escalationDate_date}
+  className: statusColumn
+- name: "${c:l('recertification.limit') }"
+  value: limitDate
+  template: #{limitDate_date}
+  className: statusColumn
 - name: "${c:l('recertification.comments') }"
   value: comments
 		]]></attribute>

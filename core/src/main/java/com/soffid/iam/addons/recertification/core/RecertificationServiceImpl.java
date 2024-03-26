@@ -3,7 +3,9 @@
  */
 package com.soffid.iam.addons.recertification.core;
 
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,6 +15,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -54,6 +57,7 @@ import com.soffid.iam.api.RoleDependencyStatus;
 import com.soffid.iam.api.RoleGrant;
 import com.soffid.iam.bpm.service.scim.ScimHelper;
 import com.soffid.iam.common.security.SoffidPrincipal;
+import com.soffid.iam.interp.Evaluator;
 import com.soffid.iam.model.GroupEntity;
 import com.soffid.iam.model.Parameter;
 import com.soffid.iam.model.RoleAccountEntity;
@@ -62,6 +66,7 @@ import com.soffid.iam.model.RoleEntity;
 import com.soffid.iam.model.UserEntity;
 import com.soffid.iam.model.criteria.CriteriaSearchConfiguration;
 import com.soffid.iam.service.impl.bshjail.SecureInterpreter;
+import com.soffid.iam.utils.ConfigurationCache;
 import com.soffid.scimquery.EvalException;
 import com.soffid.scimquery.parser.ParseException;
 import com.soffid.scimquery.parser.TokenMgrError;
@@ -428,6 +433,9 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		}
 		if (success)
 		{
+			rre.setAssignationDate(new Date());
+			rre.setReminderDate(null);
+			rre.setEscalationDate(null);
 			getRecertifiedRoleEntityDao().update(rre);
 			if ( isFinished (rre))
 			{
@@ -730,6 +738,25 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		}
 		
 		getRecertificationProcessEntityDao().toRecertificationProcess(rpe, rp);
+		
+		String url = getBaseUrl();
+		
+		handleNotifyUsers(rp, url);
+	}
+
+	private String getBaseUrl() {
+		String externalURL = System.getProperty("soffid.externalURL");
+		if (externalURL == null)
+			externalURL = ConfigurationCache.getProperty("soffid.externalURL");
+		if (externalURL == null)
+			externalURL = ConfigurationCache.getProperty("AutoSSOURL");
+		if (externalURL == null)
+			externalURL = "${soffid.externalURL}";
+		if (!externalURL.endsWith("/"))
+			externalURL = externalURL + "/";
+		if (!externalURL.endsWith("/soffid/"))
+			externalURL += "soffid/";
+		return externalURL + "addon/recertification/self.zul";
 	}
 
 	public boolean startRoleDefinitionsProcess(RecertificationProcessEntity rpe) throws Exception {
@@ -737,13 +764,11 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NoSystemSelected")); //$NON-NLS-1$
 			
 		boolean any = false;
-		SecureInterpreter i = new SecureInterpreter();
-		NameSpace ns = i.getNameSpace();
-		ns.setTypedVariable("serviceLocator", ServiceLocator.class, ServiceLocator.instance(), new Modifiers());
+		HashMap<String, Object> vars = new HashMap<String, Object>();
 		
 		for (RecertifiedInformationSystemEntity ris: rpe.getInformationSystems())
 		{
-			if (startIsRoleRecertification(rpe, i, ns, ris))
+			if (startIsRoleRecertification(rpe, vars, ris))
 				any = true;
 		}
 		if (!any)
@@ -759,9 +784,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			rpe.setStatus(ProcessStatus.ACTIVE);
 			getRecertificationProcessEntityDao().update(rpe);
 			
-			SecureInterpreter i = new SecureInterpreter();
-			NameSpace ns = i.getNameSpace();
-			ns.setTypedVariable("serviceLocator", ServiceLocator.class, ServiceLocator.instance(), new Modifiers());
+			HashMap<String, Object> vars = new HashMap<String, Object>();
 			
 			if (rpe.getInformationSystems().isEmpty())
 				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NoSystemSelected")); //$NON-NLS-1$
@@ -769,7 +792,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			boolean any = false;
 			for (RecertifiedInformationSystemEntity rge: rpe.getInformationSystems())
 			{
-				if (startIsAccountsRecertification(rpe, i, ns, rge))
+				if (startIsAccountsRecertification(rpe, rge, vars))
 					any = true;
 			}
 			if (!any)
@@ -779,8 +802,8 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		}
 	}
 
-	private boolean startIsAccountsRecertification(RecertificationProcessEntity rpe, SecureInterpreter i, NameSpace ns,
-			RecertifiedInformationSystemEntity rie) throws UtilEvalError, Exception {
+	private boolean startIsAccountsRecertification(RecertificationProcessEntity rpe, 
+			RecertifiedInformationSystemEntity rie, Map<String, Object> vars) throws UtilEvalError, Exception {
 		String filterScript = rpe.getTemplate().getFilterScript();
 
 		log.info("Starting account recertification for information system "+rie.getInformationSystem().getName());
@@ -822,8 +845,8 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 				if (filterScript != null && ! filterScript.trim().isEmpty())
 				{
 					Modifiers m = new Modifiers();
-					ns.setTypedVariable("grant", RoleAccount.class, grant, new Modifiers());
-					if ( Boolean.FALSE.equals( eval(i, filterScript)))
+					vars.put("grant", grant);
+					if ( Boolean.FALSE.equals( eval(filterScript, vars, "filter script")))
 						skip = true;
 				}
 				if (! skip)
@@ -832,7 +855,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().newRecertifiedRoleEntity();
 					rre.setRolAccountId(grant.getId());
 					rre.setInformationSystem(rie);
-					setReviewers(rpe, rre, i, ns, grant);
+					setReviewers(rpe, rre, vars, grant);
 					getRecertifiedRoleEntityDao().create(rre);
 				}
 			}
@@ -849,7 +872,8 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		return any;
 	}
 
-	private boolean startIsRoleRecertification(RecertificationProcessEntity rpe, SecureInterpreter i, NameSpace ns,
+	private boolean startIsRoleRecertification(RecertificationProcessEntity rpe, 
+			Map<String,Object> vars,
 			RecertifiedInformationSystemEntity rie) throws UtilEvalError, Exception {
 		String filterScript = rpe.getTemplate().getFilterScript();
 
@@ -862,9 +886,8 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 				boolean skip = false;
 				if (filterScript != null && ! filterScript.trim().isEmpty())
 				{
-					Modifiers m = new Modifiers();
-					ns.setTypedVariable("grant", Role.class, role, new Modifiers());
-					if ( Boolean.FALSE.equals( eval(i, filterScript)))
+					vars.put("role", role);
+					if ( Boolean.FALSE.equals( eval(filterScript, vars, "filter script")))
 						skip = true;
 				}
 				if (! skip)
@@ -873,7 +896,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					RecertifiedRoleDefinitionEntity rre = getRecertifiedRoleDefinitionEntityDao().newRecertifiedRoleDefinitionEntity();
 					rre.setRoleId(roleEntity.getId());
 					rre.setInformationSystem(rie);
-					setReviewers(rpe, rre, i, ns, role);
+					setReviewers(rpe, rre, vars, role);
 					getRecertifiedRoleDefinitionEntityDao().create(rre);
 				}
 			}
@@ -899,9 +922,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			rpe.setStatus(ProcessStatus.ACTIVE);
 			getRecertificationProcessEntityDao().update(rpe);
 			
-			SecureInterpreter i = new SecureInterpreter();
-			NameSpace ns = i.getNameSpace();
-			ns.setTypedVariable("serviceLocator", ServiceLocator.class, ServiceLocator.instance(), new Modifiers());
+			HashMap<String, Object> vars = new HashMap<String, Object>();
 			
 			if (rpe.getGroups().isEmpty())
 				throw new InternalErrorException(Messages.getString("RecertificationServiceImpl.NotSelected")); //$NON-NLS-1$
@@ -915,7 +936,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			{
 				if (!groups.contains(rge.getGroup().getName())) {
 					groups.add(rge.getGroup().getName());
-					startGroupRecertification(rpe, i, ns, rge);
+					startGroupRecertification(rpe, vars, rge);
 					for (GroupEntity child: rge.getGroup().getChildren())
 						pendingGroups.add(child);
 				}
@@ -932,7 +953,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					rge.setStatus(ProcessStatus.ACTIVE);
 					getRecertifiedGroupEntityDao().create(rge);
 					groups.add(rge.getGroup().getName());
-					startGroupRecertification(rpe, i, ns, rge);
+					startGroupRecertification(rpe, vars, rge);
 					for (GroupEntity child: rge.getGroup().getChildren())
 						pendingGroups.add(child);
 				}
@@ -945,7 +966,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	}
 
 	public void startGroupRecertification(RecertificationProcessEntity rpe,
-			SecureInterpreter i, NameSpace ns, RecertifiedGroupEntity rge)
+			Map<String, Object> vars, RecertifiedGroupEntity rge)
 			throws InternalErrorException, UtilEvalError, Exception {
 		String filterScript = rpe.getTemplate().getFilterScript();
 		
@@ -964,8 +985,8 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 					{
 						RoleAccount grant = iterator.next();
 						Modifiers m = new Modifiers();
-						ns.setTypedVariable("grant", RoleAccount.class, grant, new Modifiers());
-						Object skip = eval(i, filterScript);
+						vars.put("grant", grant);
+						Object skip = eval(filterScript, vars, "filter script");
 						if ( Boolean.FALSE.equals(skip))
 							iterator.remove();
 					}
@@ -995,7 +1016,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 						RecertifiedRoleEntity rre = getRecertifiedRoleEntityDao().newRecertifiedRoleEntity();
 						rre.setRolAccountId(grant.getId());
 						rre.setUser(rue);
-						setReviewers(rpe, rre, i, ns, grant);
+						setReviewers(rpe, rre, vars, grant);
 						getRecertifiedRoleEntityDao().create(rre);
 					}
 				}
@@ -1010,60 +1031,63 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		}
 	}
 
-	public void setReviewers(RecertificationProcessEntity rpe, RecertifiedRoleEntity rre, SecureInterpreter i,
-			NameSpace ns, RoleAccount grant) throws UtilEvalError, Exception {
-		ns.setTypedVariable("grant", RoleAccount.class, grant, new Modifiers());
+	public void setReviewers(RecertificationProcessEntity rpe, RecertifiedRoleEntity rre, 
+			Map<String,Object> vars, RoleAccount grant) throws UtilEvalError, Exception {
+		vars.put("grant", grant);
 		if ( rpe.getTemplate().getStep1Script() != null && 
 				!rpe.getTemplate().getStep1Script().trim().isEmpty())
 		{
-			rre.setStep1Users( (String) eval (i, rpe.getTemplate().getStep1Script()));
+			rre.setStep1Users( (String) eval (rpe.getTemplate().getStep1Script(), vars, "step 1"));
 			if ( rpe.getTemplate().getStep2Script() != null && 
 					!rpe.getTemplate().getStep2Script().trim().isEmpty())
 			{
-				rre.setStep2Users( (String) eval (i, rpe.getTemplate().getStep2Script()));
+				rre.setStep2Users( (String) eval (rpe.getTemplate().getStep2Script(), vars, "step 2"));
 				if ( rpe.getTemplate().getStep3Script() != null && 
 						!rpe.getTemplate().getStep3Script().trim().isEmpty())
 				{
-					rre.setStep3Users( (String) eval (i, rpe.getTemplate().getStep3Script()));
+					rre.setStep3Users( (String) eval (rpe.getTemplate().getStep3Script(), vars, "step 3"));
 					if ( rpe.getTemplate().getStep4Script() != null && 
 							!rpe.getTemplate().getStep4Script().trim().isEmpty())
 					{
-						rre.setStep4Users( (String) eval (i, rpe.getTemplate().getStep4Script()));
+						rre.setStep4Users( (String) eval (rpe.getTemplate().getStep4Script(), vars, "step 4"));
 					}
 				}
 			}
 		}
+		rre.setAssignationDate(new Date());
+		rre.setEscalationDate(null);
+		rre.setReminderDate(null);
 	}
 
 	//Method for role dependecies
 	private void setReviewers(RecertificationProcessEntity rpe, RecertifiedRoleDefinitionEntity rre,
-			SecureInterpreter i, NameSpace ns, Role role) throws Exception {
-		ns.setTypedVariable("role", Role.class, role, new Modifiers());
+			Map<String,Object> vars, Role role) throws Exception {
+		vars.put("role", role);
 		if ( rpe.getTemplate().getStep1Script() != null && 
 				!rpe.getTemplate().getStep1Script().trim().isEmpty())
 		{
-			rre.setStep1Users( (String) eval (i, rpe.getTemplate().getStep1Script()));
+			rre.setStep1Users( (String) eval (rpe.getTemplate().getStep1Script(), vars, "step 1"));
 			if ( rpe.getTemplate().getStep2Script() != null && 
 					!rpe.getTemplate().getStep2Script().trim().isEmpty())
 			{
-				rre.setStep2Users( (String) eval (i, rpe.getTemplate().getStep2Script()));
+				rre.setStep2Users( (String) eval (rpe.getTemplate().getStep2Script(), vars, "step 2"));
 				if ( rpe.getTemplate().getStep3Script() != null && 
 						!rpe.getTemplate().getStep3Script().trim().isEmpty())
 				{
-					rre.setStep3Users( (String) eval (i, rpe.getTemplate().getStep3Script()));
+					rre.setStep3Users( (String) eval (rpe.getTemplate().getStep3Script(), vars, "step 3"));
 					if ( rpe.getTemplate().getStep4Script() != null && 
 							!rpe.getTemplate().getStep4Script().trim().isEmpty())
 					{
-						rre.setStep4Users( (String) eval (i, rpe.getTemplate().getStep4Script()));
+						rre.setStep4Users( (String) eval (rpe.getTemplate().getStep4Script(), vars, "step 4"));
 					}
 				}
 			}
 		}
 	}
 
-	public Object eval(SecureInterpreter i, String filterScript) throws Exception {
+	public Object eval(String filterScript, Map<String, Object> vars, String ctx) throws Exception {
 		try {
-			return i.eval(filterScript);
+			return Evaluator.instance().evaluate(filterScript, vars, ctx);
 		} catch ( TargetError ex) {
 			log.warn("BSH Script error: "+ex.getMessage()+" at "+ex.getErrorSourceFile()+":"+ex.getErrorLineNumber());
 			log.warn("Stack trace: "+ex.getErrorText()+" at "+ex.getScriptStackTrace());
@@ -1316,16 +1340,21 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		
 		for ( String s: handleGetUsersToNotify(rp))
 		{
-			VariableResolver pResolver = new CustomVariableResolver (s, url);
-			ExpressionEvaluatorImpl ee = new ExpressionEvaluatorImpl();
-			FunctionMapper functions  = null;
-			String txt = (String) ee.evaluate(msg, String.class, pResolver , functions);
-					
-			if (msg.contains("<"))
-				getMailService().sendHtmlMailToActors(new String[] {s}, rp.getName(), txt);
-			else
-				getMailService().sendTextMailToActors(new String[] {s}, rp.getName(), txt);
+			notifyUser(rp, s, url, msg);
 		}
+	}
+
+	protected void notifyUser(RecertificationProcess rp, String user, String url, String msg)
+			throws InternalErrorException {
+		VariableResolver pResolver = new CustomVariableResolver (user, url);
+		ExpressionEvaluatorImpl ee = new ExpressionEvaluatorImpl();
+		FunctionMapper functions  = null;
+		String txt = (String) ee.evaluate(msg, String.class, pResolver , functions);
+				
+		if (msg.contains("<"))
+			getMailService().sendHtmlMailToActors(new String[] {user}, rp.getName(), txt);
+		else
+			getMailService().sendTextMailToActors(new String[] {user}, rp.getName(), txt);
 	}
 
 	@Override
@@ -1744,5 +1773,120 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		}
 	}
 
+	@Override
+	protected void handleTriggerScalations(PrintWriter out) throws Exception {
+		for (RecertificationProcessEntity process: getRecertificationProcessEntityDao().query("select a "
+				+ "from com.soffid.iam.addons.recertification.model.RecertificationProcessEntity as a "
+				+ "where type=:type and status=:status", 
+				new Parameter[] {
+						new Parameter("type", RecertificationType.ENTITLEMENTS),
+						new Parameter("status", ProcessStatus.ACTIVE)
+				})) {
+			triggerScalations(process, out);
+		}
+	}
+
+	private void triggerScalations(RecertificationProcessEntity process, PrintWriter out) throws InternalErrorException {
+		RecertificationTemplateEntity template = process.getTemplate();
+		HashSet<String> usersToNotify = new HashSet<>();
+		HashSet<String> usersToReminder = new HashSet<>();
+		
+		for (RecertifiedRoleEntity e: getRecertifiedRoleEntityDao().findByProcessId(process.getId())) {
+			if (! isFinished(e)) {
+				boolean escalated = false;
+				if (e.getAssignationDate() == null)
+				{
+					e.setAssignationDate(new Date());
+					getRecertifiedRoleEntityDao().update(e);
+				}
+				if (e.getEscalationDate() == null && 
+					template.getEscalation()!= null && template.getEscalation().intValue() > 0) {
+					Calendar c = Calendar.getInstance();
+					c.setTime(e.getAssignationDate());
+					c.add(Calendar.DAY_OF_MONTH, template.getEscalation());
+					if (c.getTime().before(new Date())) { 
+						// Escalate
+						escalate (template, process, e, usersToNotify, out);
+						getRecertifiedRoleEntityDao().update(e);
+					}
+				}
+				if ( template.getReminder() != null && template.getReminder().intValue() > 0) {
+					Calendar c = Calendar.getInstance();
+					if (e.getReminderDate() != null)
+						c.setTime(e.getAssignationDate());
+					else
+						c.setTime(e.getReminderDate());
+					c.add(Calendar.DAY_OF_MONTH, template.getEscalation());
+					if (c.getTime().before(new Date())) { 
+						// Escalate
+						reminder (template, process, e, usersToReminder);
+						e.setReminderDate(new Date());
+						getRecertifiedRoleEntityDao().update(e);
+					}
+				}
+			}
+		}
+		
+		RecertificationProcess proc = getRecertificationProcessEntityDao().toRecertificationProcess(process);
+		String url = getBaseUrl();
+		for ( String s: usersToNotify)
+		{
+			out.println("Escalating process "+process.getName()+" to "+s);
+			notifyUser(proc, s, url, template.getEscalationMessage());
+		}
+		for ( String s: usersToReminder)
+		{
+			if (! usersToNotify.contains(s)) {
+				out.println("Sending reminder for process "+process.getName()+" to "+s);
+				notifyUser(proc, s, url, template.getReminderMessage());
+			}
+		}
+	}
+
+	private void escalate(RecertificationTemplateEntity template, 
+			RecertificationProcessEntity process, 
+			RecertifiedRoleEntity e, 
+			HashSet<String> usersToNotify, PrintWriter out) {
+		Map<String, Object> vars = new HashMap<>();
+		RoleAccountEntity ra = getRoleAccountEntityDao().load(e.getRolAccountId());
+		vars.put("grant", getRoleAccountEntityDao().toRoleGrant(ra));
+		String newUser;
+		try {
+			newUser = (String) eval (template.getEscalationAddress(), vars, "escalation script");
+			if (newUser != null && ! newUser.trim().isEmpty()) {
+				for (String user: newUser.split(" +"))
+					usersToNotify.add(newUser);
+				if (e.getStep1Users() != null && e.getStep1Author() == null)
+					e.setStep1Users(newUser);
+				else if (e.getStep2Users() != null && e.getStep2Author() == null)
+					e.setStep2Users(newUser);
+				else if (e.getStep3Users() != null && e.getStep3Author() == null)
+					e.setStep3Users(newUser);
+				else if (e.getStep4Users() != null && e.getStep4Author() == null)
+					e.setStep4Users(newUser);
+				e.setEscalationDate(new Date());
+				e.setReminderDate(new Date());
+			}
+		} catch (Exception e1) {
+			out.println("Error evaluating escalation script for process "+process.getName());
+			e1.printStackTrace(out);
+		}
+		
+	}
+
+	private void reminder(RecertificationTemplateEntity template, RecertificationProcessEntity process, RecertifiedRoleEntity e, HashSet<String> usersToNotify) {
+		if (e.getStep1Users() != null && e.getStep1Author() == null)
+			for (String s: e.getStep1Users().split(" +"))
+				usersToNotify.add(s);
+		else if (e.getStep2Users() != null && e.getStep2Author() == null)
+			for (String s: e.getStep2Users().split(" +"))
+				usersToNotify.add(s);
+		else if (e.getStep3Users() != null && e.getStep3Author() == null)
+			for (String s: e.getStep3Users().split(" +"))
+				usersToNotify.add(s);
+		else if (e.getStep4Users() != null && e.getStep4Author() == null)
+			for (String s: e.getStep4Users().split(" +"))
+				usersToNotify.add(s);
+	}
 }
 

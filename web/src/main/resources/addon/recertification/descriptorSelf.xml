@@ -27,7 +27,28 @@
 		</finder>
 	</datanode>
 
-	<datanode name="role" transient="true"/>
+	<datanode name="role" transient="true">
+		<finder name="user" type="user">
+			<ejb-finder
+				jndi="java:/module/UserService-v2"
+				method="findUserByUserName"
+				if="${instance.rol.userCode != null}">
+				<parameter value="${instance.rol.userCode}" />
+			</ejb-finder>
+		</finder>
+		<finder name="account" type="account">
+			<ejb-finder
+				jndi="java:/module/AccountService-v2"
+				method="findAccount">
+				<parameter value="${instance.rol.accountName}" />
+				<parameter value="${instance.rol.accountSystem}" />
+			</ejb-finder>
+		</finder>
+	</datanode>
+	
+	<datanode name="user" transient="true" />
+	<datanode name="account" transient="true"/>
+	
 	<datanode name="roleDefinition" transient="true">
 		<finder name="role" type="role">
 			<ejb-finder

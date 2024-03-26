@@ -5,6 +5,7 @@
 
 package com.soffid.iam.addons.recertification.model;
 
+import java.util.Calendar;
 import java.util.Collection;
 
 import com.soffid.iam.addons.recertification.common.RecertifiedRole;
@@ -62,6 +63,14 @@ public class RecertifiedRoleEntityDaoImpl extends RecertifiedRoleEntityDaoBase
 					}
 				}
 			}
+		}
+		if (!finished && 
+				source.getAssignationDate() != null &&  
+				source.getUser().getGroup().getProcess().getTemplate().getEscalation() != null) {
+			Calendar c = Calendar.getInstance();
+			c.setTime(source.getAssignationDate());
+			c.add(Calendar.DAY_OF_MONTH, source.getUser().getGroup().getProcess().getTemplate().getEscalation().intValue());
+			target.setLimitDate(c.getTime());
 		}
 		target.setFinished(finished);
 		if (source.getUser() != null)
