@@ -1,18 +1,21 @@
 package com.soffid.iam.addons.recertification.web;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.ejb.CreateException;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.zkoss.util.resource.Labels;
+import org.zkoss.zk.au.AuScript;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -32,6 +35,8 @@ import com.soffid.iam.api.RoleGrant;
 import com.soffid.iam.api.User;
 import com.soffid.iam.web.component.FrameHandler;
 import com.soffid.iam.web.component.Identity;
+import com.soffid.iam.web.component.inputField.AccountDataHandler;
+import com.soffid.iam.web.component.inputField.UserDataHandler;
 import com.soffid.iam.web.popup.IdentityHandler;
 
 import es.caib.seycon.ng.exception.InternalErrorException;
@@ -43,6 +48,7 @@ import es.caib.zkib.datamodel.DataNode;
 import es.caib.zkib.datamodel.DataNodeCollection;
 import es.caib.zkib.datasource.CommitException;
 import es.caib.zkib.datasource.XPathUtils;
+import es.caib.zkib.jxpath.JXPathException;
 import es.caib.zkib.jxpath.JXPathNotFoundException;
 import es.caib.zkib.zkiblaf.Missatgebox;
 
@@ -67,6 +73,8 @@ public class RecertificateFrameHandler extends FrameHandler {
 		Div data = (Div) getFellow("dades");
 		data.setSclass(dt.getSelectedIndexes() != null && dt.getSelectedIndexes().length == 1? 
 				"data_open": "data_closed");
+		response(null, new org.zkoss.zk.au.out.AuScript(this, 
+				"zkDatatable.fixupColumns(document.getElementById('"+dt.getUuid()+"'))"));
 	}
 
 	public void onSelectRoleDefinition(Event event) {
@@ -460,6 +468,19 @@ public class RecertificateFrameHandler extends FrameHandler {
 	public void afterCompose() {
 		super.afterCompose();
 		
+	}
+	
+	public void openUser(Event ev) throws UnsupportedEncodingException, InternalErrorException, NamingException, CreateException {
+		try {
+			String userName = (String) XPathUtils.eval(getFellow("rolesGrid"), "/user/userName");
+			String url = new UserDataHandler(null).followLink(userName);
+			response(null, new org.zkoss.zk.au.out.AuScript(this, "window.open('"+url+"');"));
+		} catch (JXPathException e) {
+			String account = (String) XPathUtils.eval(getFellow("rolesGrid"), "/account/name");
+			String system = (String) XPathUtils.eval(getFellow("rolesGrid"), "/account/system");
+			String url = new AccountDataHandler(null).followLink(account+"@"+system);
+			response(null, new org.zkoss.zk.au.out.AuScript(this, "window.open('"+url+"');"));
+		}
 	}
 }
 
