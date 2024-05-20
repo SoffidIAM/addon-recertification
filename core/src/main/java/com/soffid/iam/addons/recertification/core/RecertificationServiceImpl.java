@@ -455,6 +455,17 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 						ra.setEndDate(new Date());
 					}
 					getApplicationService().update(ra);
+					
+					final RecertificationProcessEntity process = rre.getUser().getGroup().getProcess();
+					RecertificationTemplateEntity template = process.getTemplate();
+					if (template.getNotificationMessage() != null && 
+							!template.getNotificationMessage().trim().isEmpty()) {
+						sendNotificationEmail(ra, template.getNotificationMessage(), process);
+					}
+							
+					
+					
+					
 				} finally {
 					Security.nestedLogoff();
 				}
@@ -464,6 +475,22 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			checkUserStatus(rre.getUser());
 		if ( rre.getInformationSystem() != null)
 			checkISStatus(rre.getInformationSystem());
+	}
+
+	private void sendNotificationEmail(RoleAccount ra, String msg, RecertificationProcessEntity rp) throws InternalErrorException {
+		if (ra.getUserCode() != null) {
+			VariableResolver pResolver = new CustomVariableResolver (ra);
+			ExpressionEvaluatorImpl ee = new ExpressionEvaluatorImpl();
+			FunctionMapper functions  = null;
+			String txt = (String) ee.evaluate(msg, String.class, pResolver , functions);
+					
+			if (msg.contains("<"))
+				getMailService().sendHtmlMailToActors(new String[] {ra.getUserCode()}, 
+						rp.getName(), txt);
+			else
+				getMailService().sendTextMailToActors(new String[] {ra.getUserCode()}, 
+						rp.getName(), txt);
+		}
 	}
 
 	public void checkUserStatus(RecertifiedUserEntity u) {

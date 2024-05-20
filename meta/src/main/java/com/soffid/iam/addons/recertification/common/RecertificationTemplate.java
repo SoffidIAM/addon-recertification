@@ -41,8 +41,17 @@ public class RecertificationTemplate {
 
 	@Nullable String escalationAddress;
 	
-	@Attribute(defaultValue = "\"<p>Dear ${fullName}</p><p>Some recerification process has reached the You have  this link to complete the <a href='${url}'>review process</a>\"")
+	@Attribute(defaultValue = "\"<p>Dear ${fullName}</p><p>"+
+			"Some recertification process has reached the deadline. "+
+			"Please, follow link to complete the <a href='${url}'>review process</a>\"")
 	@Nullable String escalationMessage;
+
+	@Attribute(defaultValue = "\"<p>Dear ${userFullName}</p>"
+			+ "<p>"
+			+ "The system administrator has performed a timely permission review of your permissions.</p>"
+			+ "<p>As a result of this review, the permission ${roleDescription} has been removed.</p>\"")
+	@Nullable String notificationMessage;
+
 
 
 }

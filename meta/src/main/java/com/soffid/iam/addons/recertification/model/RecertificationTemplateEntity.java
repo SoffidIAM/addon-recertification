@@ -60,6 +60,9 @@ public class RecertificationTemplateEntity {
 	@Column(name="SCT_ESCMES", length = 32000)
 	@Nullable String escalationMessage;
 
+	@Column(name="SCT_NOTMES", length = 32000)
+	@Nullable String notificationMessage;
+
 	RecertificationTemplateEntity findByName (String name) {return null;}
 }
 

@@ -38,7 +38,7 @@
 
 	<autoritzacio>
 		<codi>recertification:query</codi>
-		<descripcio>Query role recertification</descripcio>
+		<descripcio>Take part of recertification campains</descripcio>
 		<ambit>Recertification</ambit>
 	</autoritzacio>
 

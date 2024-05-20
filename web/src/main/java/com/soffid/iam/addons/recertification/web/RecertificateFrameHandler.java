@@ -71,6 +71,7 @@ public class RecertificateFrameHandler extends FrameHandler {
 		final boolean selected = dt.getSelectedIndexes() != null && dt.getSelectedIndexes().length > 0;
 		c.setVisible(selected);
 		Div data = (Div) getFellow("dades");
+		int i = dt.getSelectedIndex();
 		data.setSclass(dt.getSelectedIndexes() != null && dt.getSelectedIndexes().length == 1? 
 				"data_open": "data_closed");
 		response(null, new org.zkoss.zk.au.out.AuScript(this, 
@@ -98,6 +99,7 @@ public class RecertificateFrameHandler extends FrameHandler {
 			XPathUtils.setValue(dt, "check3", true);
 		else if ( XPathUtils.eval(dt, "step4Date") == null)
 			XPathUtils.setValue(dt, "check4", true);
+		
 	}
 
 	public void reject(Event event) {
@@ -119,7 +121,7 @@ public class RecertificateFrameHandler extends FrameHandler {
 					XPathUtils.setValue(dt, "check4", false);
 			}
 			dt.updateClientRow(dt.getSelectedIndex());
-			dt.setSelectedIndex(-1);
+//			dt.setSelectedIndex(-1);
 		});
 	}
 	

@@ -1,5 +1,8 @@
 package com.soffid.iam.addons.recertification.core;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.apache.commons.beanutils.BeanUtils;
 import org.jbpm.jpdl.el.ELException;
 import org.jbpm.jpdl.el.VariableResolver;
 
@@ -7,6 +10,7 @@ import com.soffid.iam.ServiceLocator;
 import com.soffid.iam.api.Group;
 import com.soffid.iam.api.GroupUser;
 import com.soffid.iam.api.Role;
+import com.soffid.iam.api.RoleAccount;
 import com.soffid.iam.api.RoleGrant;
 import com.soffid.iam.api.System;
 import com.soffid.iam.api.User;
@@ -26,15 +30,27 @@ public class CustomVariableResolver implements VariableResolver {
 	
 	private String url;
 	private String user;
+	private RoleAccount roleAccount;
 
 	public CustomVariableResolver(String s, String url) {
 		this.user = s;
 		this.url = url;
 	}
 
+	public CustomVariableResolver(RoleAccount ra) {
+		this.roleAccount = ra;
+	}
+
 	@Override
 	public Object resolveVariable(String pName) throws ELException {
-		if (pName.equals("url"))
+		if (roleAccount != null) {
+			try {
+				return BeanUtils.getProperty(roleAccount, pName);
+			} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+				throw new ELException("Error evaluating "+pName, e);
+			}
+		}
+		else if (pName.equals("url"))
 			return url;
 		else if (pName.equals("userName"))
 			return user;

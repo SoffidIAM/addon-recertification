@@ -4,7 +4,8 @@
 
 <frame xmlns:h="http://www.w3.org/1999/xhtml" mold="div" style="position: relative" 
 	use="com.soffid.iam.addons.recertification.web.RecertificateFrameHandler" id="frame"
-	onFinishDelegation="ref:frame.finishDelegation">
+	onFinishDelegation="ref:frame.finishDelegation"
+	help="https://bookstack.soffid.com/books/recertification/page/recertification-campaigns">
 	<style>
 	div.datatable.matrix table.thead td {
 	    padding-left: 0px;

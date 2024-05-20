@@ -3,7 +3,8 @@
 <?taglib uri="/WEB-INF/tld/soffid.dsp.tld" prefix="soffid" ?>
 
 <frame xmlns:h="http://www.w3.org/1999/xhtml" mold="div" style="position: relative" 
-	use="com.soffid.iam.addons.recertification.web.PolicyFrameHandler" id="frame">
+	use="com.soffid.iam.addons.recertification.web.PolicyFrameHandler" id="frame"
+	help="https://bookstack.soffid.com/books/recertification/page/recertification-policies">
 	<datamodel id="model" rootNode="root"
 		src="addon/recertification/descriptorRecertification.xml"/>
 	<div sclass="card" id="card">
@@ -98,6 +99,9 @@
 					<customfield3 dataType="HTML" bind="escalationMessage" multiline="true" maxlength="10000"
 						 selectIcon="/img/pencil.svg" 
 						label="${c:l('recertification.escalationMessage') }"/>
+					<customfield3 dataType="HTML" bind="notificationMessage" multiline="true" maxlength="10000"
+						 selectIcon="/img/pencil.svg" 
+						label="${c:l('recertification.notificationMessage') }"/>
 					<div style="text-align: right; width: 100%">
 						<databutton image="/img/undo-r.svg" label="${c:l('common.undo')}" datamodel="/model" onClick="ref:frame.undo">
 						</databutton>
