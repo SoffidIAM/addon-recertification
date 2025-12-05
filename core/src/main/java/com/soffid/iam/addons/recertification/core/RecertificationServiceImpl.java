@@ -433,48 +433,52 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 		}
 		if (success)
 		{
-			rre.setAssignationDate(new Date());
-			rre.setReminderDate(null);
-			rre.setEscalationDate(null);
-			getRecertifiedRoleEntityDao().update(rre);
-			if ( isFinished (rre))
-			{
-				Security.nestedLogin(Security.getCurrentAccount(), new String[] {
-						Security.AUTO_USER_QUERY+Security.AUTO_ALL,
-						Security.AUTO_USER_UPDATE+Security.AUTO_ALL,
-						Security.AUTO_USER_ROLE_DELETE+Security.AUTO_ALL,
-						Security.AUTO_USER_ROLE_CREATE+Security.AUTO_ALL,
-						Security.AUTO_USER_ROLE_QUERY+Security.AUTO_ALL
-					});
-				try {
-					RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
-					RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
-					ra.setCertificationDate(new Date());
-					if (!check)
-					{
-						ra.setEndDate(new Date());
-					}
-					getApplicationService().update(ra);
-					
-					final RecertificationProcessEntity process = rre.getUser().getGroup().getProcess();
-					RecertificationTemplateEntity template = process.getTemplate();
-					if (template.getNotificationMessage() != null && 
-							!template.getNotificationMessage().trim().isEmpty()) {
-						sendNotificationEmail(ra, template.getNotificationMessage(), process);
-					}
-							
-					
-					
-					
-				} finally {
-					Security.nestedLogoff();
-				}
-			}
+			completRecertifedRoleEntity(check, rre);
 		}
 		if ( rre.getUser() != null)
 			checkUserStatus(rre.getUser());
 		if ( rre.getInformationSystem() != null)
 			checkISStatus(rre.getInformationSystem());
+	}
+
+	private void completRecertifedRoleEntity(boolean check, RecertifiedRoleEntity rre) throws InternalErrorException {
+		rre.setAssignationDate(new Date());
+		rre.setReminderDate(null);
+		rre.setEscalationDate(null);
+		getRecertifiedRoleEntityDao().update(rre);
+		if ( isFinished (rre))
+		{
+			Security.nestedLogin(Security.getCurrentAccount(), new String[] {
+					Security.AUTO_USER_QUERY+Security.AUTO_ALL,
+					Security.AUTO_USER_UPDATE+Security.AUTO_ALL,
+					Security.AUTO_USER_ROLE_DELETE+Security.AUTO_ALL,
+					Security.AUTO_USER_ROLE_CREATE+Security.AUTO_ALL,
+					Security.AUTO_USER_ROLE_QUERY+Security.AUTO_ALL
+				});
+			try {
+				RoleAccountEntity entity = getRoleAccountEntityDao().load(rre.getRolAccountId());
+				RoleAccount ra = getRoleAccountEntityDao().toRoleAccount(entity);
+				ra.setCertificationDate(new Date());
+				if (!check)
+				{
+					ra.setEndDate(new Date());
+				}
+				getApplicationService().update(ra);
+				
+				final RecertificationProcessEntity process = rre.getUser().getGroup().getProcess();
+				RecertificationTemplateEntity template = process.getTemplate();
+				if (template.getNotificationMessage() != null && 
+						!template.getNotificationMessage().trim().isEmpty()) {
+					sendNotificationEmail(ra, template.getNotificationMessage(), process);
+				}
+						
+				
+				
+				
+			} finally {
+				Security.nestedLogoff();
+			}
+		}
 	}
 
 	private void sendNotificationEmail(RoleAccount ra, String msg, RecertificationProcessEntity rp) throws InternalErrorException {
@@ -1239,6 +1243,24 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	@Override
 	protected List<RecertifiedRole> handleGetPendingRecertifiedRoles(RecertificationProcess rp) throws Exception {
 		Collection<RecertifiedRoleEntity> roles = getRecertifiedRoleEntityDao().findByProcessId(rp.getId());
+		for (Iterator<RecertifiedRoleEntity> it = roles.iterator(); it.hasNext();) {
+			RecertifiedRoleEntity role = it.next();
+			RoleAccountEntity re = getRoleAccountEntityDao().load(role.getRolAccountId());
+			if (re == null || ! re.isEnabled()) {
+				it.remove();
+				role.setCheck1(true);
+				role.setCheck2(true);
+				role.setCheck3(true);
+				role.setCheck4(true);
+				role.setReminderDate(null);
+				role.setEscalationDate(null);
+				getRecertifiedRoleEntityDao().update(roles);
+				if ( role.getUser() != null)
+					checkUserStatus(role.getUser());
+				if ( role.getInformationSystem() != null)
+					checkISStatus(role.getInformationSystem());
+			}
+		}
 		LinkedList<RecertifiedRole> result = new LinkedList<RecertifiedRole>( getRecertifiedRoleEntityDao().toRecertifiedRoleList(roles));
 		for (Iterator<RecertifiedRole> it = result.iterator(); it.hasNext();)
 		{
@@ -1246,6 +1268,7 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 			boolean discard = true;
 			if (rre.getRol() == null)
 			{
+				handleCheck(rre, discard);
 				discard = true;
 			}
 			else if (rre.getCheck1() == null)
@@ -1289,6 +1312,20 @@ public class RecertificationServiceImpl extends RecertificationServiceBase {
 	@Override
 	protected List<RecertifiedRoleDefinition> handleGetPendingRecertifiedRoleDefinitions(RecertificationProcess rp) throws Exception {
 		Collection<RecertifiedRoleDefinitionEntity> roles = getRecertifiedRoleDefinitionEntityDao().findByProcessId(rp.getId());
+		for (Iterator<RecertifiedRoleDefinitionEntity> it = roles.iterator(); it.hasNext();) {
+			RecertifiedRoleDefinitionEntity role = it.next();
+			RoleEntity re = getRoleEntityDao().load(role.getRoleId());
+			if (re == null) {
+				it.remove();
+				role.setCheck1(true);
+				role.setCheck2(true);
+				role.setCheck3(true);
+				role.setCheck4(true);
+				getRecertifiedRoleDefinitionEntityDao().update(roles);
+				if ( role.getInformationSystem() != null)
+					checkISStatus(role.getInformationSystem());
+			}
+		}
 		LinkedList<RecertifiedRoleDefinition> result = new LinkedList<RecertifiedRoleDefinition>( getRecertifiedRoleDefinitionEntityDao().toRecertifiedRoleDefinitionList(roles));
 		for (Iterator<RecertifiedRoleDefinition> it = result.iterator(); it.hasNext();)
 		{
